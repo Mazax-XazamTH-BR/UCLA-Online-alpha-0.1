@@ -1552,7 +1552,7 @@ let restrictedCardsToPlay = [
 //WebSocket
 let ws;
 
-  ws = new WebSocket("ws://192.168.0.12:8081");
+  ws = new WebSocket("wss://192.168.0.12:8081");
   
   ws.onopen = () => {
   console.log('Conectado ao servidor WebSocket');
