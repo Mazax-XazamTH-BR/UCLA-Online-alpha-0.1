@@ -1,0 +1,33 @@
+{
+  "name": "ucla-jogo-versao-manual-simplificada",
+  "version": "1.0.0",
+  "main": "eslint.config.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/server.js",
+    "dev": "nodemon src/server.js",
+    "buildcss": "postcss frontend/assets/css/tailwindInput.css -o ./assets/css/tailwindOutput.css",
+    "watchcss": "postcss frontend/assets/css/tailwindInput.css -o ./assets/css/tailwindOutput.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "autoprefixer": "^10.4.20",
+    "globals": "^15.9.0",
+    "http-server": "^14.1.1",
+    "tailwindcss": "^3.4.10",
+    "uuid": "^10.0.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "local-repl": "^4.0.0",
+    "nodemon": "^3.1.4",
+    "postcss": "^8.4.45",
+    "postcss-cli": "^11.0.0",
+    "postcss-import": "^16.1.0",
+    "postcss-nested": "^6.2.0"
+  }
+}

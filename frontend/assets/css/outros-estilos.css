@@ -1,0 +1,305 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Playwrite+DE+Grund&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Jacquarda+Bastarda+9&display=swap');
+
+:root {
+    font-size: 16px;
+    font-family: "Playwrite DE Grund", cursive;
+}
+
+body {
+    position: relative;
+    display: flex;
+    color: #555;
+    justify-content: center;
+    align-items: center;
+    height: 100dvh;
+    background: url('../other-images/ucla-bg-wp.png');
+    background-size: contain;
+    background-attachment: fixed;
+    font-family: Arial, sans-serif;
+}
+
+
+.login-container {
+    display: block;
+    background-color: #fff;
+    padding: 20px 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-form h2 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.input-group {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+button:disabled {
+  background-color: #cccccc; /* Cor de fundo cinza claro */
+  color: #666666; /* Cor do texto */
+  cursor: not-allowed; /* Cursor para indicar que o botão não pode ser clicado */
+  opacity: 0.6; /* Deixa o botão um pouco transparente */
+}
+
+.login__button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #007BFF;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.main-game-section {
+    display: none;
+    background-color: #f3f3f3;
+    height: 100dvh;
+}
+
+#codigoESelecionar {
+    padding: 5rem 10rem;
+
+}
+
+#divA {
+    width: 100%;
+}
+
+#deckCodeInput {
+    padding: 5px;
+    flex-grow: 1;
+}
+
+#username {
+    color: #555;
+}
+
+#hand {
+    height: 118px;
+}
+
+.carta {
+    position: relative;
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 9%;
+    max-width: 14%;
+    height: 100%;
+    margin: 2px;
+    border-radius: 8px;
+  }
+
+ .carta:hover {
+  filter: drop-shadow(7px 7px 20px yellow);
+ } 
+
+  .card-image {
+    width: 100%;
+    height: 100%;
+    z-index: 1; /* Coloca a imagem atrás dos textos */
+  }
+
+  #yourScore, #opponentScore {
+    font-family: "Playwrite DE Grund", cursive;
+  }
+
+  .card-attack, .card-health, .card-cost-display  {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    background-color: black;
+    border: 1px solid white;
+    aspect-ratio: 1 / 1;
+    
+  }
+  
+  .card-attack, .card-health {
+    width: 2rem;
+    height: 1.9rem;
+    border-radius: 50%;
+    color: white;
+
+  }
+  
+  .card-cost-display {
+    position: absolute;
+    top: 2%;
+    border-radius: 50%;
+    z-index: 2;
+    right: 2%;
+    font-size: 18px;
+    width: 25px;
+    height: 25px;
+  
+  }
+  
+  .card-stats {
+    display: flex;
+    position: absolute;
+    width: 80%;
+    background: none;
+    bottom: 0;
+    justify-content: space-around;
+    gap: 7px;
+    z-index: 2;
+  }
+  
+  .attack-icon, .life-icon {
+    width: 80%;
+    aspect-ratio: 1 / 1;
+  }
+
+  .slots {
+    position: relative;
+  }
+
+  .playCard-button {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    top: 25%;
+    bottom: 25%;
+    right: 25%;
+    left: 25%;
+    width: 60%;
+    height: 40px;
+    padding: 4px;
+    border-radius: 5px;
+  }
+
+  .attack-button {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    right: 77%;
+    width: 80px; /* Ajuste o tamanho conforme necessário */
+    height: 40px;
+    padding: 2px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    background-color: #FF3333;
+}
+
+  #opponent-health {
+    display: flex;
+    position: relative;
+  }
+
+  .attack-button:hover {
+    cursor: pointer;
+    background-color: #770505;
+  }
+
+  .playCard-button {
+    background-color: #33FF33;
+  }
+
+  .playCard-button:hover {
+    cursor: pointer;
+    background-color: #057705;
+  }
+
+  .hover__container {
+    z-index: 3;
+    position: absolute;
+    background-color: black;
+    border: 2px solid white;
+    width: 250px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .hover__image {
+    width: 65%;
+  }
+
+  .hover__text {
+    white-space: pre-line;
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    font-size: 0.8rem;
+  }
+
+  .highlight {
+    border: 2px solid green;
+    box-shadow: 0 0 10px 2px yellow;
+  }
+
+  #big__turn__display {
+    width: 80%;
+    position: absolute;
+    height: 90px;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: black;
+    font-family: "Jacquarda Bastarda 9", serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 70px;
+    /*letter-spacing: 10px; */
+  }

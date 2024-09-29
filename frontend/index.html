@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<link rel="stylesheet" href="./assets/css/outros-estilos.css">
+<link rel="stylesheet" href="../assets/css/tailwindOutput.css">
+<link rel="stylesheet" href="./assets/css/card-effects-animations.css">
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Jacquarda+Bastarda+9&display=swap');
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCLA | CCG De Fantasia </title>
+</head>
+<body class="bg-gray-800 text-zinc-300 font-sans">
+    <div class="login-container">
+        <form class="login-form">
+            <h2 class="font-bold text-2xl">Login</h2>
+            <div class="input-group">
+                <label for="username" class="font-semibold">Nome de Usuário</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <button type="submit" class="login__button">Entrar</button>
+        </form>
+    </div>
+
+   
+        <div id="codigoESelecionar" class="hidden flex-col items-center justify-center w-full max-w-lg p-8 bg-white shadow-lg rounded-lg border border-gray-200">
+            <h2 class="text-2xl font-semibold mb-4 text-gray-800">Selecione o Deck</h2>
+            <div class="flex flex-col w-full space-y-4">
+                <div class="flex flex-col items-center space-x-4">
+                    <label for="deckCodeInput" class="text-lg font-medium text-gray-700">Código do Deck:</label>
+                    <input type="text" id="deckCodeInput" placeholder="Digite o código do deck" class="flex-grow p-2 border border-gray-300 text-gray-900 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button id="interpretButton" class="px-6 py-2 bg-blue-500 text-white font-semibold rounded-md shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300">Selecionar Deck</button>
+            </div>
+        </div>
+
+        <section id="main-game-section" class="hidden max-w-5xl mx-auto p-6 pt-32 space-y-6 flex-col">
+            <!-- Placar de Pontuação da Partida e Exibição do Turno Atual -->
+            
+                <div class="flex justify-between p-4 bg-white rounded shadow-md mt-2">
+                <div id="yourScore" class="text-lg text-gray-900 font-semibold">Você: <span id="score-player1" class="font-bold">0</span></div>
+
+                <div id="currentTurnDisplay" class="text-4xl font-bold text-gray-900"> Turno 1 </div>
+
+                <div id="opponentScore" class="text-lg text-gray-900 font-semibold">Oponente: <span id="score-player2" class="font-bold">0</span></div>
+            </div>
+
+     
+           
+            <!-- Campo de Batalha -->
+             <div id="battlefield" class="flex justify-between items-center gap-36">
+                <div id="yourField" class="flex justify-between items-center flex-col space-y-4">
+                    <!-- Linha de Frente -->
+                    <div class="flex justify-between space-x-2">
+                        <div id="slot1" class="slots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">1</div>
+                        <div id="slot2" class="slots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">2</div>
+                        <div id="slot3" class="slots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">3</div>
+                    </div>
+            
+                    <!-- Linha do Meio (Avatar e Vida) -->
+                    <div class="flex items-center justify-between gap-12">
+                            <img src="./assets/other-images/avatar.png" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-gray-300">
+                            <div class="text-xl font-bold"><span id="player-health" class="avatar text-green-400 bg-black rounded-full aspect-square p-2">25</span></div>
+                        <img src="./assets/other-images/black-heart-icon.png" alt="Coração" class="w-16 h-16">
+                    </div>
+            
+                    <!-- Retaguarda -->
+                    <div class="flex justify-between space-x-2">
+                        <div id="slot4" class="slots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">4</div>
+                        <div id="slot5" class="slots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">5</div>
+                        <div id="slot6" class="slots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">6</div>
+                    </div>
+                </div>
+
+                <!-- Painel de Ações Manuais -->
+                <div id="actions__panel" class="flex flex-col space-y-2">
+                    <button id="buffOrDebuffButton" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded-xl">Buff/Debuff</button>
+                    <button id="healButton" class="px-4 py-2 mb-4 bg-green-500 text-white font-semibold rounded-xl">Curar</button>
+                    <button id="exileCardButton" class="px-4 py-2 mb-4 bg-red-500 text-white font-semibold rounded-xl">Remover do jogo/Exilar</button>
+                    <button id="recallButton" class="px-4 py-2 mb-4 bg-yellow-500 text-white font-semibold rounded-xl">Voltar para mão</button>
+                </div>
+            
+                <!-- LADO DO OPONENTE -->
+                <div id="opponentField" class="space-y-4">
+                    <!-- Linha de Frente -->
+                    <div class="flex justify-between space-x-2">
+                        <div id="opponentSlot1" class="slots opponentSlots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">1</div>
+                        <div id="opponentSlot2" class="slots opponentSlots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">2</div>
+                        <div id="opponentSlot3" class="slots opponentSlots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">3</div>
+                    </div>
+            
+                       <!-- Linha do Meio (Avatar e Vida) -->
+                       <div class="flex items-center justify-between gap-12">
+                        <img src="./assets/other-images/avatar.png" alt="Avatar" class="w-16 h-16 rounded-full border-2 border-gray-300">
+                        <div class="text-xl font-bold"><span id="opponent-health" class="avatar text-green-400 bg-black rounded-full aspect-square p-2 relative">25</span></div>
+                    <img src="./assets/other-images/black-heart-icon.png" alt="Coração" class="w-16 h-16">
+                </div>
+            
+                    <!-- Retaguarda -->
+                    <div class="flex justify-between space-x-2">
+                        <div id="opponentSlot4" class="slots opponentSlots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">4</div>
+                        <div id="opponentSlot5" class="slots opponentSlots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">5</div>
+                        <div id="opponentSlot6" class="slots opponentSlots w-20 h-28 bg-gray-800 font-semibold text-2xl border-white border-solid border-2 flex items-center justify-center rounded">6</div>
+                    </div>
+                </div>
+             </div>
+            
+        
+            <!-- Mão de Cartas -->
+                <div id="hand" class="flex justify-center space-x-2 mb-4"></div>
+                <!--<button id="drawButton" class="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600">Comprar Carta</button>
+            </div>-->
+        
+            <!-- Container de Mana -->
+            <div id="manaContainer" class="flex items-center justify-between bg-white p-4 rounded shadow-md">
+                <div id="manaCounter" class="text-lg text-gray-900 font-semibold">Mana: 0</div>
+                <div id="manaIcons" class="flex space-x-2"></div>
+                <button id="endTurn" class="px-4 py-1 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600">Finalizar Turno</button>
+            </div>
+        
+    </section>
+
+<script type="module" src="js/POO.js"></script>   
+<script type="module" src="js/cards.js"></script> 
+<script src="js/soundEffects.js"></script> 
+<script src="js/clientSide.js"></script>
+</body>
+</html>

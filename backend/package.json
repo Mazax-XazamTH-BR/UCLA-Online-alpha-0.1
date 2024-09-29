@@ -1,0 +1,24 @@
+{
+  "name": "ucla-jogo-versao-manual-simplificada",
+  "version": "1.0.0",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./src/server.js",
+    "dev": "nodemon src/server.js",
+    "buildcss": "postcss frontend/assets/css/tailwindInput.css -o ./assets/css/tailwindOutput.css",
+    "repl": "local-repl"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "tailwindcss": "^3.4.10",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
