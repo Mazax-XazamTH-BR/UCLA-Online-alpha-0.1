@@ -4339,7 +4339,7 @@ function addMana(amount = 1, additionalMana = true) {
   for (let i = 0; i < mana; i++) {
     const manaIcon = document.createElement("img");
     manaIcon.className = "mana-icon";
-    manaIcon.src = "../frontend/assets/other-images/icone-mana.png";
+    manaIcon.src = "assets/other-images/icone-mana.png";
     manaIcon.style.width = "3%";
     manaIcon.style.height = "auto";
     manaIcon.style.margin = "2px";

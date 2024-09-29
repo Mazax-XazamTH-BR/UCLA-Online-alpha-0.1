@@ -329,9 +329,9 @@ const cards = [
   },
   {
     id: 28,
-    name: "Sta. Helena transformada",
+    name: "Engenheiro Louco",
     baseCost: 10,
-    image: "assets/cartas/neutra/Sta._Helena_transformada.png",
+    image: "assets/cartas/neutra/Engenheiro_Louco.png",
     baseAttack: 7,
     baseHealth: 10,
     speed: 1,
