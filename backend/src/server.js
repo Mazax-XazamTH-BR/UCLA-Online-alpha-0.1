@@ -387,9 +387,9 @@ function handleMessageFromPlayer(parsedMessage, player) {
 
 // ---------------------------------------------
 
-import { cards } from "../../frontend/js/cards.js"; // importando as cartas
+import { cards } from "../../js/cards.js"
 
-import { Carta, Avatar } from "../../frontend/js/POO.js";
+import { Carta, Avatar } from "../../js/POO.js";
 
 // Instância de Avatar para o inimigo e aliado
 const enemyAvatar = new Avatar(false, 25);
