@@ -370,6 +370,15 @@ function handleMessageFromPlayer(parsedMessage, player) {
       }
       break;
 
+    case "gameOver":
+      if (parsedMessage.data.result) {
+        const { result } = parsedMessage.data;
+        if (result === "winner") {
+          gameOver(player);
+        }
+      }
+      break;
+
     default:
       console.log("Tipo de mensagem desconhecido:", parsedMessage.type);
       break;

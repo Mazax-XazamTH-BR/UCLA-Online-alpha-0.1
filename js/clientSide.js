@@ -934,7 +934,9 @@ const playEffectsCards = [
         return;
       }
 
-      const userInput = prompt("Você pode gastar até 4 de mana adicional para aprimorar meu grito de guerra (Máx. 7 de dano e +5/+5 para as suas outras cartas).");
+      const userInput = prompt(
+        "Você pode gastar até 4 de mana adicional para aprimorar meu grito de guerra (Máx. 7 de dano e +5/+5 para as suas outras cartas)."
+      );
 
       let extraManaSpent = Math.max(mana, Number(userInput));
 
@@ -951,7 +953,9 @@ const playEffectsCards = [
         extraManaSpent = 0;
       }
 
-      console.log(`Mana que você possuía no instante em que Voltexz foi jogada e seu efeito ativado: ${mana}`);
+      console.log(
+        `Mana que você possuía no instante em que Voltexz foi jogada e seu efeito ativado: ${mana}`
+      );
       // se a mana do custo da própria Voltexz n tiver sido computada ainda, então o máximo que extraManaSpent pode ser é igual a mana - Number(voltexzElement.querySelector('.card-cost-display').textContent)
 
       spendMana(extraManaSpent);
@@ -2479,7 +2483,6 @@ const cards = [
   },
 ];
 
-
 const restrictedCardsToPlay = [
   {
     id: 40,
@@ -2513,7 +2516,7 @@ const clickListenersMap = new Map();
 const handElement = document.getElementById("hand");
 
 // WebSocket
-const ws = new WebSocket('wss://uclagamewsserver.onrender.com');
+const ws = new WebSocket("wss://uclagamewsserver.onrender.com");
 //const ws = new WebSocket("ws://192.168.0.13:8081");
 
 ws.onopen = () => {
@@ -3614,7 +3617,6 @@ function getHealthZone(health) {
 
 // Função para aplicar dano ao avatar
 function applyDamageToAvatar({ target, avatarData }) {
-
   const avatarHealth = Number(avatarData.health);
 
   console.log(
@@ -3622,15 +3624,12 @@ function applyDamageToAvatar({ target, avatarData }) {
   );
 
   let avatarElement;
-  let healthZoneVar;
 
   // Determina o avatar a ser atualizado
   if (target === "ally") {
     avatarElement = alliedAvatar;
-    healthZoneVar = "healthZone";
   } else if (target === "enemy" || target === "opponent") {
     avatarElement = opponentAvatar;
-    healthZoneVar = "opponentHealthZone";
   } else {
     console.error(`target inválido: ${target}`);
     return;
@@ -3657,6 +3656,19 @@ function applyDamageToAvatar({ target, avatarData }) {
     opponentHealthZone = zone;
   }
   avatarElement.style.color = color;
+
+  setTimeout(() => {
+    if (avatarHealth <= 0) {
+      let message;
+      if (avatarElement === opponentAvatar) {
+        message = {
+          type: "gameOver",
+          data: { result: "winner" },
+        };
+      }
+      sendMessageToServer(JSON.stringify(message));
+    }
+  }, 1800);
 }
 
 // Função para aplicar a cura ao avatar
@@ -3754,8 +3766,6 @@ function keywordAdditionRequest(keyword, cardElement) {
 
 // ----------------------------------------------------------------
 
-
-
 // -------------------------------------------------------------------------------------
 
 function pickCardInHand(amount) {
@@ -3839,7 +3849,6 @@ let turnEndRequested = false;
 let currentTurnIndex = 1;
 let isLastTurn;
 
-
 /* EXEMPLO DE UM OBJETO DE AÇÃO DO TURNO {
   type: 'cardPlayed',  // Tipo da ação (ex: jogar carta)
   card: carta1,      // Carta jogada
@@ -3848,14 +3857,12 @@ let isLastTurn;
 
 const playsHistory = [
   {
-    turn: 1,  // Número do turno
-    actions: []
+    turn: 1, // Número do turno
+    actions: [],
   },
   // outros turnos...
-  {
-  }
-]
-
+  {},
+];
 
 const endTurnEffectsCards = [
   {
@@ -3962,8 +3969,7 @@ const endTurnEffectsCards = [
         type: "cardCostUpdated",
         data: { instanceId, newCost },
       };
-      sendMessageToServer(JSON.stringify(message)); 
-
+      sendMessageToServer(JSON.stringify(message));
     },
   },
 
@@ -4532,12 +4538,15 @@ function updateFieldAfterCombat(cartaAlvoData, cartaAtacanteData) {
   }, 1800); // Delay de 100ms para garantir que as atualizações visuais sejam processadas antes de remover o DOM
 }
 
-
 function updateCardDisplay(cartaData) {
   console.log("updateCardDisplay chamada para:", cartaData);
-  const cartaElement = document.querySelector(`.carta[data-instance-id="${cartaData.instanceId}"]`);
+  const cartaElement = document.querySelector(
+    `.carta[data-instance-id="${cartaData.instanceId}"]`
+  );
   if (!cartaElement) {
-    console.error(`Elemento da carta com instanceId ${cartaData.instanceId} não encontrado.`);
+    console.error(
+      `Elemento da carta com instanceId ${cartaData.instanceId} não encontrado.`
+    );
     return null;
   }
 
@@ -4561,9 +4570,11 @@ function updateCardStats(cardData) {
   console.log("updateCardStats chamada para:", cardData);
   // Extrai o ID da instância da carta dos dados recebidos e converte para número
   const instanceId = Number(cardData.instanceId);
-  
+
   // Seleciona o elemento da carta no DOM que corresponde ao ID de instância
-  const cardElement = document.querySelector(`.carta[data-instance-id="${instanceId}"]`);
+  const cardElement = document.querySelector(
+    `.carta[data-instance-id="${instanceId}"]`
+  );
 
   // Verifica se o ID da instância é válido
   if (!instanceId) {
@@ -4573,15 +4584,17 @@ function updateCardStats(cardData) {
 
   // Verifica se o elemento da carta foi encontrado
   if (!cardElement) {
-    console.error(`Elemento no DOM não encontrado para a carta de instanceId = ${instanceId}`);
+    console.error(
+      `Elemento no DOM não encontrado para a carta de instanceId = ${instanceId}`
+    );
     return;
   }
 
   console.log(`Carta encontrada:`, cardElement);
-  
+
   // Seleciona o contêiner de estatísticas da carta
   const statsDivDisplay = cardElement.querySelector(".card-stats");
-  
+
   // Verifica se o contêiner de estatísticas existe
   if (!statsDivDisplay) {
     console.error("Div de exibição de stats da carta não encontrado no DOM.");
@@ -4589,7 +4602,7 @@ function updateCardStats(cardData) {
   }
 
   console.log(`Contêiner de estatísticas encontrado:`, statsDivDisplay);
-  
+
   // Seleciona os elementos de ataque e vida dentro do contêiner de estatísticas
   const healthDisplay = statsDivDisplay.querySelector(".card-health");
   const attackDisplay = statsDivDisplay.querySelector(".card-attack");
@@ -4597,7 +4610,9 @@ function updateCardStats(cardData) {
   // Atualiza a vida
   if (healthDisplay) {
     console.log("Health Display:", healthDisplay);
-    console.log(`Atualizando saúde da carta ${cardData.name} para ${cardData.currentHealth}.`);
+    console.log(
+      `Atualizando saúde da carta ${cardData.name} para ${cardData.currentHealth}.`
+    );
     healthDisplay.textContent = cardData.currentHealth;
     healthDisplay.style.color = getHealthColor(cardData);
     console.log(`Vida da carta atualizada para: ${cardData.currentHealth}`);
@@ -4632,7 +4647,9 @@ function updateCardStats(cardData) {
     handleCardDeath(cardElement);
   }
 
-  console.log(`Estatísticas atualizadas: Ataque = ${cardData.currentAttack}, Vida = ${cardData.currentHealth}`);
+  console.log(
+    `Estatísticas atualizadas: Ataque = ${cardData.currentAttack}, Vida = ${cardData.currentHealth}`
+  );
 }
 
 function getHealthColor(cartaData) {
@@ -4648,21 +4665,21 @@ function getAttackColor(cartaData) {
 }
 
 function handleCardDeath(cartaElement) {
-    const slotDaCarta = cartaElement.closest(".slots");
-    const deadCardFrame = document.createElement("img");
-    deadCardFrame.src = "./assets/other-images/dead-card-frame.png";
-    slotDaCarta.appendChild(deadCardFrame);
+  const slotDaCarta = cartaElement.closest(".slots");
+  const deadCardFrame = document.createElement("img");
+  deadCardFrame.src = "./assets/other-images/dead-card-frame.png";
+  slotDaCarta.appendChild(deadCardFrame);
 
-    const slotId = slotDaCarta.id.replace(/slot|opponentSlot/, "");
-    setTimeout(() => {
-      slotDaCarta.innerHTML = slotId;
-    }, 1500);
+  const slotId = slotDaCarta.id.replace(/slot|opponentSlot/, "");
+  setTimeout(() => {
+    slotDaCarta.innerHTML = slotId;
+  }, 1500);
 
-    cartaElement.remove();
+  cartaElement.remove();
 }
 
 function playSound(soundName) {
-  const soundEffect = soundEffects.find(s => s.name === soundName);
+  const soundEffect = soundEffects.find((s) => s.name === soundName);
   if (soundEffect) {
     let audio = new Audio(soundEffect.soundFile);
     audio.play();
