@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./src/server.js",
-    "dev": "nodemon src/server.js",
-    "buildcss": "postcss frontend/assets/css/tailwindInput.css -o ./assets/css/tailwindOutput.css",
-    "watchcss": "postcss frontend/assets/css/tailwindInput.css -o ./assets/css/tailwindOutput.css --watch"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "buildcss": "postcss assets/css/tailwindInput.css -o ./assets/css/tailwindOutput.css",
+    "watchcss": "postcss assets/css/tailwindInput.css -o ./assets/css/tailwindOutput.css --watch"
   },
   "keywords": [],
   "author": "",

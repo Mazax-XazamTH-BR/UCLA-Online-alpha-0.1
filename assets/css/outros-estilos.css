@@ -1,87 +1,183 @@
 /* Reset básico */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
+@import url("https://fonts.googleapis.com/css2?family=Playwrite+DE+Grund&display=swap");
 
-@import url('https://fonts.googleapis.com/css2?family=Playwrite+DE+Grund&display=swap');
-
-@import url('https://fonts.googleapis.com/css2?family=Jacquarda+Bastarda+9&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Jacquarda+Bastarda+9&display=swap");
 
 :root {
-    font-size: 16px;
-    font-family: "Playwrite DE Grund", cursive;
+  font-size: 16px;
+  font-family: "Playwrite DE Grund", cursive;
 }
 
 body {
-    position: relative;
-    display: flex;
-    color: #555;
-    justify-content: center;
-    align-items: center;
-    height: 100dvh;
-    background: url('../other-images/ucla-bg-wp.png');
-    background-size: contain;
-    background-attachment: fixed;
-    font-family: Arial, sans-serif;
+  position: relative;
+  display: flex;
+  color: #555;
+  justify-content: center;
+  align-items: center;
+  height: 100dvh;
+  background: url("../other-images/ucla-bg-wp.png");
+  background-size: contain;
+  background-attachment: fixed;
+  font-family: Arial, sans-serif;
 }
 
+/*------------------------------------------------------------------------------- */
+
+/* Animações de fade in e fade out */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Animação de zoom in */
+@keyframes zoomIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+/* Animação personalizada para a tela de derrota (renomeada para evitar conflitos) */
+@keyframes defeatShake {
+  0% {
+    transform: translate(1px, 1px) rotate(0deg);
+  }
+  10% {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+  20% {
+    transform: translate(-3px, 0px) rotate(1deg);
+  }
+  30% {
+    transform: translate(3px, 2px) rotate(0deg);
+  }
+  40% {
+    transform: translate(1px, -1px) rotate(1deg);
+  }
+  50% {
+    transform: translate(-1px, 2px) rotate(-1deg);
+  }
+  60% {
+    transform: translate(-3px, 1px) rotate(0deg);
+  }
+  70% {
+    transform: translate(3px, 1px) rotate(-1deg);
+  }
+  80% {
+    transform: translate(-1px, -1px) rotate(1deg);
+  }
+  90% {
+    transform: translate(1px, 2px) rotate(0deg);
+  }
+  100% {
+    transform: translate(1px, -2px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+
+  30% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+
+  50% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.7);
+  }
+
+  75% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 0, 0, 0);
+  }
+
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+/*------------------------------------------------------------------------------- */
 
 .login-container {
-    display: block;
-    background-color: #fff;
-    padding: 20px 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    width: 100%;
-    text-align: center;
+  display: block;
+  background-color: #fff;
+  padding: 20px 40px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
 }
 
 .login-form h2 {
-    margin-bottom: 20px;
-    color: #333;
+  margin-bottom: 20px;
+  color: #333;
 }
 
 .input-group {
-    margin-bottom: 15px;
-    text-align: left;
+  margin-bottom: 15px;
+  text-align: left;
 }
 
 .input-group label {
-    display: block;
-    margin-bottom: 5px;
-    color: #555;
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
 }
 
 .input-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
 }
 
 .button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    font-size: 1rem;
-    cursor: pointer;
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
 }
 
 button:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 button:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
 button:disabled {
@@ -92,124 +188,161 @@ button:disabled {
 }
 
 .login__button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background-color: #007BFF;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    font-size: 16px;
-    cursor: pointer;
+  display: block;
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
 }
 
+/*------------------------------------------------------------------------------- */
+
 .main-game-section {
-    display: none;
-    background-color: #f3f3f3;
-    height: 100dvh;
+  display: none;
+  background-color: #f3f3f3;
+  height: 100dvh;
 }
 
 #codigoESelecionar {
-    padding: 5rem 10rem;
-
+  padding: 5rem 10rem;
 }
 
 #divA {
-    width: 100%;
+  width: 100%;
 }
 
 #deckCodeInput {
-    padding: 5px;
-    flex-grow: 1;
+  padding: 5px;
+  flex-grow: 1;
 }
 
 #username {
-    color: #555;
+  color: #555;
 }
+
+/*------------------------------------------------------------------------------- */
 
 #hand {
-    height: 118px;
+  height: 118px;
 }
 
+/*------------------------------------------------------------------------------- */
+
 .carta {
-    position: relative;
-    overflow: visible;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-width: 9%;
-    max-width: 14%;
-    height: 100%;
-    margin: 2px;
-    border-radius: 8px;
-  }
+  position: relative;
+  overflow: visible;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 9%;
+  max-width: 14%;
+  height: 100%;
+  margin: 2px;
+  border-radius: 8px;
+  transition: transform 0.5s ease-in-out; /* Controla a duração e suavidade da animação */
+}
 
- .carta:hover {
+.carta:hover, .mini-card:hover {
   filter: drop-shadow(7px 7px 20px yellow);
- } 
+  transform: scale(1.5);
+  translate: 0 -15px;
+  z-index: 11;
+}
 
-  .card-image {
-    width: 100%;
-    height: 100%;
-    z-index: 1; /* Coloca a imagem atrás dos textos */
-  }
+.carta.modal {
+  width: 50%;
+  max-width: 50% !important;
+}
 
-  #yourScore, #opponentScore {
-    font-family: "Playwrite DE Grund", cursive;
-  }
 
-  .card-attack, .card-health, .card-cost-display  {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    background-color: black;
-    border: 1px solid white;
-    aspect-ratio: 1 / 1;
-    
-  }
-  
-  .card-attack, .card-health {
-    width: 2rem;
-    height: 1.9rem;
-    border-radius: 50%;
-    color: white;
+.mini-card {
+  width: 16%;
+}
 
-  }
-  
-  .card-cost-display {
-    position: absolute;
-    top: 2%;
-    border-radius: 50%;
-    z-index: 2;
-    right: 2%;
-    font-size: 18px;
-    width: 25px;
-    height: 25px;
-  
-  }
-  
-  .card-stats {
-    display: flex;
-    position: absolute;
-    width: 80%;
-    background: none;
-    bottom: 0;
-    justify-content: space-around;
-    gap: 7px;
-    z-index: 2;
-  }
-  
-  .attack-icon, .life-icon {
-    width: 80%;
-    aspect-ratio: 1 / 1;
-  }
+.card-image {
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* Coloca a imagem atrás dos textos */
+}
 
-  .slots {
-    position: relative;
-  }
+.card-attack,
+.card-health,
+.card-cost-display,
+.card-speed-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  background-color: black;
+  border: 1px solid white;
+  aspect-ratio: 1 / 1;
+}
 
-  .playCard-button {
+.card-attack,
+.card-health {
+  width: 2rem;
+  height: 1.9rem;
+  border-radius: 50%;
+  color: white;
+}
+
+.card-cost-display {
+  position: absolute;
+  top: 2%;
+  border-radius: 50%;
+  z-index: 2;
+  right: 2%;
+  font-size: 18px;
+  width: 25px;
+  height: 25px;
+}
+
+.card-stats {
+  display: flex;
+  position: absolute;
+  width: 80%;
+  background: none;
+  bottom: 0;
+  justify-content: space-around;
+  gap: 7px;
+  z-index: 2;
+}
+
+.card-speed-display {
+  z-index: 2;
+  position: absolute;
+  top: 2%;
+  font-size: 14px;
+  justify-content: center;
+  align-items: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+}
+
+.attack-icon,
+.life-icon {
+  width: 80%;
+  aspect-ratio: 1 / 1;
+}
+
+/*------------------------------------------------------------------------------- */
+
+#yourScore,
+#opponentScore {
+  font-family: "Playwrite DE Grund", cursive;
+}
+
+/*------------------------------------------------------------------------------- */
+.slots {
+  position: relative;
+}
+
+/*   .playCard-button {
     position: absolute;
     z-index: 3;
     display: flex;
@@ -223,83 +356,190 @@ button:disabled {
     height: 40px;
     padding: 4px;
     border-radius: 5px;
-  }
+  } */
 
-  .attack-button {
-    position: absolute;
-    z-index: 3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    right: 77%;
-    width: 80px; /* Ajuste o tamanho conforme necessário */
-    height: 40px;
-    padding: 2px;
-    border-radius: 5px;
-    font-size: 0.85rem;
-    background-color: #FF3333;
+.attack-button {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  right: 77%;
+  width: 80px; /* Ajuste o tamanho conforme necessário */
+  height: 40px;
+  padding: 2px;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  background-color: #ff3333;
 }
 
-  #opponent-health {
-    display: flex;
-    position: relative;
-  }
+.attack-button:hover {
+  cursor: pointer;
+  background-color: #770505;
+}
 
-  .attack-button:hover {
-    cursor: pointer;
-    background-color: #770505;
-  }
+.playCard-button:hover {
+  cursor: pointer;
+  background-color: #057705;
+}
 
-  .playCard-button {
-    background-color: #33FF33;
-  }
+/*------------------------------------------------------------------------------- */
 
-  .playCard-button:hover {
-    cursor: pointer;
-    background-color: #057705;
-  }
+#opponent-health {
+  display: flex;
+  position: relative;
+}
 
-  .hover__container {
-    z-index: 3;
-    position: absolute;
-    background-color: black;
-    border: 2px solid white;
-    width: 250px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
+.heart-icon:hover {
+  animation: pulse 1.5s infinite;
+}
 
-  .hover__image {
-    width: 65%;
-  }
+/*------------------------------------------------------------------------------- */
 
-  .hover__text {
-    white-space: pre-line;
-    text-align: center;
-    font-weight: bold;
-    color: white;
-    font-size: 0.8rem;
-  }
+.hover__container {
+  z-index: 12;
+  position: absolute;
+  background-color: black;
+  border: 2px solid white;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
-  .highlight {
-    border: 2px solid green;
-    box-shadow: 0 0 10px 2px yellow;
-  }
+.hover__image {
+  width: 65%;
+}
 
-  #big__turn__display {
-    width: 80%;
-    position: absolute;
-    height: 90px;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: black;
-    font-family: "Jacquarda Bastarda 9", serif;
-    font-weight: 400;
-    font-style: normal;
-    font-size: 70px;
-    /*letter-spacing: 10px; */
-  }
+.hover__text {
+  white-space: pre-line;
+  text-align: center;
+  font-weight: bold;
+  color: white;
+  font-size: 0.8rem;
+}
+
+/*------------------------------------------------------------------------------- */
+
+.highlight {
+  border: 2px solid green;
+  filter: drop-shadow(7px 10px 20px rgb(31, 196, 9));
+}
+
+/*------------------------------------------------------------------------------- */
+
+#big__round__display {
+  width: 80%;
+  position: absolute;
+  height: 90px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  font-family: "Jacquarda Bastarda 9", serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 70px;
+  /*letter-spacing: 10px; */
+}
+
+/* Overlay da tela de vitória */
+#victoryOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 50, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  color: white;
+  font-family: Arial, sans-serif;
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* Texto de "Vitória" */
+#victoryHeading {
+  font-size: 6rem;
+  color: gold;
+  text-shadow: 2px 2px 10px rgba(255, 215, 0, 0.7);
+  margin-bottom: 50px;
+  animation: zoomIn 0.8s ease-in-out;
+}
+
+/* Botão de reiniciar jogo */
+#restartButton {
+  height: 60px;
+  width: 250px;
+  border: none;
+  border-radius: 30px;
+  background-color: #ff7f50;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+/* Efeito hover no botão */
+#restartButton:hover {
+  background-color: #ff6347;
+  transform: scale(1.05);
+}
+
+/* Classe para fade out na remoção do overlay */
+.fade-out {
+  animation: fadeOut 1s ease-in-out;
+}
+
+/* Overlay da tela de derrota */
+#defeatOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(128, 0, 0, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  color: white;
+  font-family: Arial, sans-serif;
+  animation: fadeIn 1s ease-in-out;
+}
+
+/* Texto de "Derrota" */
+#defeatHeading {
+  font-size: 6rem;
+  color: darkred;
+  text-shadow: 2px 2px 10px rgba(255, 0, 0, 0.7);
+  margin-bottom: 50px;
+  animation: defeatShake 0.8s ease-in-out;
+}
+
+/* Botão de reiniciar jogo na tela de derrota */
+#restartButtonDefeat {
+  height: 60px;
+  width: 250px;
+  border: none;
+  border-radius: 30px;
+  background-color: #ff4500;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+/* Efeito hover no botão */
+#restartButtonDefeat:hover {
+  background-color: #ff6347;
+  transform: scale(1.05);
+}

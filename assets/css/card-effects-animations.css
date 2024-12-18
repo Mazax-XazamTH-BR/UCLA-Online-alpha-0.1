@@ -76,6 +76,65 @@
 }
 
 /* *****************************************************/
+
+@keyframes jackGlowEffect {
+  0% {
+    filter: drop-shadow(0 0 0px rgba(255, 255, 150, 0));
+    opacity: 1;
+  }
+  50% {
+    filter: drop-shadow(0 0 40px rgba(255, 255, 150, 1)) brightness(1.8);
+    opacity: 0.8;
+  }
+  100% {
+    filter: drop-shadow(0 0 0px rgba(255, 255, 150, 0));
+    opacity: 1;
+  }
+}
+
+.jackEffect {
+  animation: jackGlowEffect 3s ease-in-out;
+}
+
+
+/* *****************************************************/
+@keyframes laylaEffect {
+  0%, 7% {
+    transform: rotateZ(0);
+    filter: drop-shadow(3px 3px 30px #ffd700); /* Amarelo */
+  }
+  15% {
+    transform: rotateZ(-15deg);
+    filter: drop-shadow(3px 3px 30px #ffd700); /* Amarelo */
+  }
+  20% {
+    transform: rotateZ(10deg);
+    filter: drop-shadow(3px 3px 30px #ffd700); /* Amarelo */
+  }
+  25% {
+    transform: rotateZ(-10deg);
+    filter: drop-shadow(6px 6px 45px #ffd700); /* Amarelo */
+  }
+  30% {
+    transform: rotateZ(6deg);
+    filter: drop-shadow(6px 6px 45px #ffd700); /* Amarelo */
+  }
+  35% {
+    transform: rotateZ(-4deg);
+    filter: drop-shadow(6px 6px 45px #ffd700); /* Amarelo */
+  }
+  40%, 100% {
+    transform: rotateZ(0);
+    filter: drop-shadow(3px 3px 30px #ffd700); /* Amarelo */
+  }
+}
+
+.laylaEffect {
+  animation: laylaEffect 1.3s ease-in-out 2; 
+}
+
+/* *****************************************************/
+
 @keyframes diabreteSombrioEffect {
   0%, 7% {
     transform: translateY(0);
@@ -118,6 +177,27 @@
 
   .diabreteSombrioEffect {
     animation: diabreteSombrioEffect 1.3s ease-in-out 3; 
+}
+
+/* *****************************************************/
+
+@keyframes glacialAuraEffect {
+  0% {
+    filter: drop-shadow(0 0 0px #8ecae6);
+    opacity: 0.5;
+  }
+  50% {
+    filter: drop-shadow(0 0 30px #8ecae6);
+    opacity: 0.9;
+  }
+  100% {
+    filter: drop-shadow(0 0 0px #8ecae6);
+    opacity: 0;
+  }
+}
+
+.glacial-aura-effect-trigger {
+  animation: glacialAuraEffect 3s ease-in-out;
 }
 
 /* *****************************************************/
@@ -187,4 +267,7 @@ filter: drop-shadow(2px 2px 15px darkgreen);
 .slide-in-animation {
   animation: slideInFromDeck 1s ease-out forwards;
 }
+
+/* *****************************************************/
+
 

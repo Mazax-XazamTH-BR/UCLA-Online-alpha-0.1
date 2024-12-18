@@ -1,30 +1,30 @@
 const soundEffects = [
   {
     name: 'defeatSound',
-    soundFile: '../frontend/assets/SFX/defeatSound.wav'
+    soundFile: 'assets/SFX/defeatSound.wav'
   },
   {
     name: 'healthIncreaseSound',
-    soundFile: '../frontend/assets/SFX/healthIncreaseSound.wav'
+    soundFile: 'assets/SFX/healthIncreaseSound.wav'
   },
   {
     name: 'hitSound',
-    soundFile: '../frontend/assets/SFX/hitSound.wav'
+    soundFile: 'assets/SFX/hitSound.wav'
   },
   {
     name: 'shufflingSound2',
-    soundFile: '../frontend/assets/SFX/shufflingSound (2).mp3'
+    soundFile: 'assets/SFX/shufflingSound (2).mp3'
   },
   {
     name: 'shufflingSound',
-    soundFile: '../frontend/SFX/shufflingSound.mp3'
+    soundFile: 'assets/SFX/shufflingSound.mp3'
   },
   {
     name: 'victorySound',
-    soundFile: './frontend/assets/SFX/victorySound.wav'
+    soundFile: 'assets/SFX/victorySound.wav'
   },
   {
     name: 'cardDrawSound',
-    soundFile: '../frontend/assets/SFX/cardDrawSound.mp3'
+    soundFile: 'assets/SFX/cardDrawSound.mp3'
   }
 ];

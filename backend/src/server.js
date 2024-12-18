@@ -8,8 +8,10 @@ const wss = new WebSocketServer({ port: 8081 });
 
 let players = [];
 
+let player1;
+let player2;
+
 wss.on("connection", (ws) => {
-  console.log("Nova conexão estabelecida.");
   ws.on("error", console.error);
   console.log("Servidor online e rodando na porta 8081.");
 
@@ -35,19 +37,19 @@ wss.on("connection", (ws) => {
 
   ws.on("message", (message) => {
     const data = message.toString(); // Garante que a mensagem seja uma string
-    console.log("Mensagem recebida no servidor:", data);
+    //console.log("Mensagem recebida no servidor:", data);
     try {
       let parsedMessage = JSON.parse(data);
       handleMessageFromPlayer(parsedMessage, player);
     } catch (error) {
-      console.error("Erro ao processar mensagem JSON:", error);
+      //console.error("Erro ao processar mensagem JSON:", error);
     }
   });
 
   ws.on("close", () => {
     players = players.filter((p) => p.id !== player.id);
-    console.log(`Jogador ${player.id} desconectado.`);
-    console.log(`players.length ${players.length}`);
+    //console.log(`Jogador ${player.id} desconectado.`);
+    //console.log(`players.length ${players.length}`);
 
     let message = {
       type: "playerDisconnected",
@@ -58,20 +60,48 @@ wss.on("connection", (ws) => {
     players = [];
     enemyAvatar.health = 25;
     alliedAvatar.health = 25;
+    whoPlaysFirst = null;
+    roundEndRequests = 0;
+    currentRoundIndex = 1;
+
+    // Redefine cardsDestroyed ao estado inicial
+    cardsDestroyed = {
+      byAllMeans: {
+        byPlayer1: 0,
+        byPlayer2: 0,
+      },
+      combatDamageOnly: {
+        byPlayer1: 0,
+        byPlayer2: 0,
+      },
+      allDamageSources: {
+        byPlayer1: 0,
+        byPlayer2: 0,
+      },
+      directDamageOnly: {
+        byPlayer1: 0,
+        byPlayer2: 0,
+      },
+      destructionEffects: {
+        byPlayer1: 0,
+        byPlayer2: 0,
+      },
+    };
   });
 
-  console.log("O Servidor está ligado.");
+  //console.log("O Servidor está ligado.");
 });
 
-console.log("Servidor WebSocket escutando na porta 8081...");
+//console.log("Servidor WebSocket escutando na porta 8081...");
 
 // -----------------------------------------------------------------------
 
-let turnEndRequests = 0;
+let roundEndRequests = 0;
+let whoPlaysFirst = null;
 
 function handleMessageFromPlayer(parsedMessage, player) {
-  console.log("Mensagem recebida do jogador:");
-  console.log(player.nickname);
+  //console.log("Mensagem recebida do jogador:");
+  //console.log(player.nickname);
   console.log("Tipo da mensagem:", parsedMessage.type);
 
   switch (parsedMessage.type) {
@@ -83,9 +113,9 @@ function handleMessageFromPlayer(parsedMessage, player) {
         );
 
         if (nicknameExists) {
-          console.error(
+          /* console.error(
             `O nickname "${parsedMessage.nickname}" já está em uso.`
-          );
+          ); */
           // Você pode enviar uma mensagem de erro ao jogador aqui, se desejar
           player.ws.send(
             JSON.stringify({
@@ -98,10 +128,17 @@ function handleMessageFromPlayer(parsedMessage, player) {
 
         // Se o nickname não estiver em uso, atribui o nickname ao jogador
         player.nickname = parsedMessage.nickname;
+
+        // Atribui o jogador como player1 ou player2
+        if (players.length === 0) {
+          player1 = player;
+        } else if (players.length === 1) {
+          player2 = player;
+        }
         players.push(player);
-        console.log(
+        /*   console.log(
           `Jogador ${player.nickname} conectado com ID ${player.id} e IP ${player.ip}`
-        );
+        ); */
 
         let message = {
           type: "yourUserId",
@@ -114,10 +151,10 @@ function handleMessageFromPlayer(parsedMessage, player) {
           requestDeckCode();
         }
       } else {
-        console.error(
+        /*         console.error(
           "Mensagem de login recebida sem nickname:",
           parsedMessage
-        );
+        ); */
       }
       break;
 
@@ -144,20 +181,18 @@ function handleMessageFromPlayer(parsedMessage, player) {
       if (parsedMessage.data) {
         let cardInstanceId = parsedMessage.data;
         let slotNumber = parsedMessage.data.slotNumber;
-        console.log(
+        /* console.log(
           "Pedido de jogada de carta recebido do jogador para a carta com a instanceId: ",
           cardInstanceId
-        );
+        ); */
 
         playCard(cardInstanceId, slotNumber, player);
 
-        if (turnEndRequests === 1) {
+        if (roundEndRequests === 1) {
           let message = {
-            type: "turnEndRequestDenied",
+            type: "undefined",
           };
-          console.log(
-            "Um jogador não aceitou a finalização de turno e realizou uma ação, enviando mensagem para o outro jogador para que ele desbloqueie suas ações."
-          );
+
           const theOtherPlayer = players.find((p) => p.id !== player.id);
           theOtherPlayer.ws.send(JSON.stringify(message));
         }
@@ -172,47 +207,33 @@ function handleMessageFromPlayer(parsedMessage, player) {
 
     case "addCardToOpponentField":
       if (parsedMessage.data.cardInstanceId && parsedMessage.data.slotNumber) {
-        console.log(`parsedMessage${parsedMessage}`);
+        //console.log(`parsedMessage${parsedMessage}`);
         battlefieldUpdateOrder(parsedMessage, player);
+      }
+      break;
+
+    case "enableAttackRequest":
+      if (parsedMessage.data.instanceId) {
+        enableAttackForTheCard(parsedMessage.data, player);
+      } else {
+        //console.error('instanceId não recebido ou não contém um valor válido.');
       }
       break;
 
     case "attackCardRequest":
       if (parsedMessage.data) {
-        console.log(`parsedMessage.data ${JSON.stringify(parsedMessage.data)}`);
+        //console.log(`parsedMessage.data ${JSON.stringify(parsedMessage.data)}`);
         attackCard(
           parsedMessage.data.cartaAlvoInstanceId,
           parsedMessage.data.cartaAtacanteInstanceId,
           player
         );
-
-        if (turnEndRequests === 1) {
-          let message = {
-            type: "turnEndRequestDenied",
-          };
-          console.log(
-            "Um jogador não aceitou a finalização de turno e realizou uma ação, enviando mensagem para o outro jogador para que ele desbloqueie suas ações."
-          );
-          const theOtherPlayer = players.find((p) => p.id !== player.id);
-          theOtherPlayer.ws.send(JSON.stringify(message));
-        }
       }
       break;
 
     case "attackTheAvatar":
       if (parsedMessage.data) {
-        damageAvatar(parsedMessage.data, player);
-
-        if (turnEndRequests === 1) {
-          let message = {
-            type: "turnEndRequestDenied",
-          };
-          console.log(
-            "Um jogador não aceitou a finalização de turno e realizou uma ação, enviando mensagem para o outro jogador para que ele desbloqueie suas ações."
-          );
-          const theOtherPlayer = players.find((p) => p.id !== player.id);
-          theOtherPlayer.ws.send(JSON.stringify(message));
-        }
+        attackAvatar(parsedMessage.data, player);
       }
       break;
 
@@ -228,21 +249,22 @@ function handleMessageFromPlayer(parsedMessage, player) {
         const cardInstanceId = parsedMessage.data.cardInstanceId;
         dealDirectDamage(damage, cardInstanceId);
       } else {
-        console.warn(
+        /* console.warn(
           "Variável damage e/ou variável cardInstanceId recebidas do jogador não possuem valores válidos."
-        );
+        ); */
       }
       break;
 
     case "directDamageToAvatar":
       if (parsedMessage.data.damage && parsedMessage.data.avatarId) {
         const damage = parsedMessage.data.damage;
+        console.log(`damage: ${damage}`);
         const avatarId = parsedMessage.data.avatarId;
         directDamageToAvatar(damage, avatarId, player);
       } else {
-        console.warn(
+        /* console.warn(
           `Variável damage e/ou variável cardInstanceId recebidas do jogador não possuem valores válidos`
-        );
+        ); */
       }
       break;
 
@@ -283,14 +305,40 @@ function handleMessageFromPlayer(parsedMessage, player) {
         const carta = cartasMap.get(Number(cardInstanceId));
         if (carta instanceof Carta) {
           carta.morrer();
+          if (checkDeathAndAddToGraveyard(carta)) {
+            checkAndExecuteGraveyardEffects();
+            const cause = 'destructionEffect'
+            updateCardsDestroyed(carta, cause);
+          }
           let message = {
             type: "destroyCardOrder",
             data: carta,
+            destructionEffect: true
           };
           players.forEach((p) => {
             p.ws.send(JSON.stringify(message));
           });
         }
+      }
+      break;
+
+    case "increaseCardSpeedRequest":
+      if (parsedMessage.data.cardInstanceId && parsedMessage.data.amount) {
+        handleSpeedUpdateRequest(parsedMessage.data, "increase", player);
+      } else {
+        /*   console.error(
+          "Valores da variável cardInstanceId ou da variável amount recebida do cliente inválidos ou inexistentes."
+        ); */
+      }
+      break;
+
+    case "decreaseCardSpeedRequest":
+      if (parsedMessage.data.cardInstanceId && parsedMessage.data.amount) {
+        handleSpeedUpdateRequest(parsedMessage.data, "decrease", player);
+      } else {
+        /*    console.error(
+          "Valores da variável cardInstanceId ou da variável amount recebida do cliente inválidos ou inexistentes."
+        ); */
       }
       break;
 
@@ -303,40 +351,50 @@ function handleMessageFromPlayer(parsedMessage, player) {
       }
       break;
 
+    case "negativeKeywordRemoved":
+      if (
+        parsedMessage.data.cardInstanceId &&
+        parsedMessage.data.removedKeywords
+      ) {
+        removeCardKeyword(parsedMessage.data);
+      }
+      break;
+
     case "cardCostUpdated":
-        // Verifica se a mensagem recebida contém instanceId e newCost
-        if (parsedMessage.data.instanceId && parsedMessage.data.newCost) {
-          const { instanceId, newCost } = parsedMessage.data;
-      
-          // Verifica se instanceId é um número válido
-          if (!isNaN(Number(instanceId))) {
-            // Recupera a carta correspondente ao instanceId do mapa
-            const carta = cartasMap.get(Number(instanceId));
-      
-            // Verifica se a carta é uma instância válida da classe Carta
-            if (carta instanceof Carta) {
-              // Atualiza o custo da carta e registra a mudança
-              carta.updateCost(newCost);
-              console.log(`Custo da carta ${carta.name} (instanceId: ${instanceId}) atualizado para ${newCost}.`);
-              cartasMap.set(Number(carta.instanceId), carta);
-            } else {
-              // Log de erro caso a carta não seja encontrada no mapa
-              console.error(`Instância-objeto carta não encontrada no mapa para a instanceId ${instanceId}.`);
-            }
+      // Verifica se a mensagem recebida contém instanceId e newCost
+      if (parsedMessage.data.instanceId && parsedMessage.data.newCost) {
+        const { instanceId, newCost } = parsedMessage.data;
+
+        // Verifica se instanceId é um número válido
+        if (!isNaN(Number(instanceId))) {
+          // Recupera a carta correspondente ao instanceId do mapa
+          const carta = cartasMap.get(Number(instanceId));
+
+          // Verifica se a carta é uma instância válida da classe Carta
+          if (carta instanceof Carta) {
+            // Atualiza o custo da carta e registra a mudança
+            carta.updateCost(newCost);
+            /*             console.log(
+              `Custo da carta ${carta.name} (instanceId: ${instanceId}) atualizado para ${newCost}.`
+            ); */
+            cartasMap.set(Number(carta.instanceId), carta);
           } else {
-            // Log de erro caso instanceId não seja um número válido
-            console.error(`instanceId ${instanceId} não possui um valor válido.`);
+            // Log de erro caso a carta não seja encontrada no mapa
+            /*             console.error(
+              `Instância-objeto carta não encontrada no mapa para a instanceId ${instanceId}.`
+            ); */
           }
         } else {
-          // Log de erro se os dados necessários não estiverem presentes na mensagem
-          console.error(`Dados insuficientes na mensagem para atualizar o custo da carta: ${JSON.stringify(parsedMessage.data)}`);
+          // Log de erro caso instanceId não seja um número válido
+          //console.error(`instanceId ${instanceId} não possui um valor válido.`);
         }
-        break;
-      
-    case "nextTurnEffect":
-      if (parsedMessage.data) {
-        let effectFunction = new Function("return " + parsedMessage.data)();
-        addNextTurnEffect(effectFunction);
+      } else {
+        // Log de erro se os dados necessários não estiverem presentes na mensagem
+        /*         console.error(
+          `Dados insuficientes na mensagem para atualizar o custo da carta: ${JSON.stringify(
+            parsedMessage.data
+          )}`
+        ); */
       }
       break;
 
@@ -345,15 +403,30 @@ function handleMessageFromPlayer(parsedMessage, player) {
         const { mana } = parsedMessage.data;
         if (!isNaN(Number(mana))) {
           player.mana = mana;
-          console.log(
+          /*           console.log(
             `Mana do jogador (${player.nickname}) atualizada para: ${player.mana}`
-          );
+          ); */
         }
       }
       break;
 
-    case "endTurnRequest":
-      handleEndTurnRequest(player);
+    case "specialBuffRequest":
+      if (parsedMessage.data?.instanceId) {
+        // Verifica se instanceId existe
+        handleSpecialBuffRequest(
+          parsedMessage.data.instanceId,
+          parsedMessage.condition
+        );
+      } else {
+        console.error(
+          "specialBuffRequest recebido sem instanceId válido:",
+          parsedMessage
+        );
+      }
+      break;
+
+    case "endRoundRequest":
+      handleEndRoundRequest(player);
       break;
 
     case "myUpdatedScore":
@@ -364,9 +437,9 @@ function handleMessageFromPlayer(parsedMessage, player) {
           gameOver(player);
         }
       } else {
-        console.error(
+        /*         console.error(
           `A variável playerMatchPoints ${playerMatchPoints} recebida do jogador ${parsedMessage.username} não contém um valor válido`
-        );
+        ); */
       }
       break;
 
@@ -387,7 +460,7 @@ function handleMessageFromPlayer(parsedMessage, player) {
 
 // ---------------------------------------------
 
-import { cards } from "../../js/cards.js"
+import { cards, graveyardInteractions } from "../../js/cards.js";
 
 import { Carta, Avatar } from "../../js/POO.js";
 
@@ -410,6 +483,8 @@ function startTheGame() {
       })
     );
   });
+  console.log("whoPlaysFirst = ", whoPlaysFirst);
+  whoPlaysFirstDecider();
 }
 
 function requestDeckCode() {
@@ -424,9 +499,41 @@ function requestDeckCode() {
   );
 }
 
+function whoPlaysFirstDecider() {
+  // Função para sortear quem joga primeiro
+  const randomPick = () => (Math.random() < 0.5 ? player1 : player2);
+
+  if (whoPlaysFirst === null) {
+    if (currentRoundIndex === 1) {
+      // Sorteio para determinar quem joga primeiro
+      console.log("É a primeira rodada, sorteando quem joga primeiro.");
+      whoPlaysFirst = randomPick();
+    }
+  }
+
+  // Define mensagens para ambos os jogadores
+  const messageToPlayer1 = {
+    type: "whoPlaysFirstDecided",
+    data:
+      whoPlaysFirst.id === player1.id ? "you play first" : "you play second",
+  };
+
+  const messageToPlayer2 = {
+    type: "whoPlaysFirstDecided",
+    data:
+      whoPlaysFirst.id === player2.id ? "you play first" : "you play second",
+  };
+
+  // Envia as mensagens
+  player1.ws.send(JSON.stringify(messageToPlayer1));
+  player2.ws.send(JSON.stringify(messageToPlayer2));
+
+  console.log(`Quem joga primeiro: ${whoPlaysFirst.nickname}`);
+}
+
 //----------------------------------------------------------------
 
-let editMode = false;
+let editMode = true;
 
 // ----------------------------------------------------------------
 
@@ -436,16 +543,16 @@ export const cartasMap = new Map();
 // Função para adicionar uma nova carta ao mapa
 function addCartaToMap(carta) {
   if (cartasMap.has(carta.instanceId)) {
-    console.error(
+    /*     console.error(
       `Tentativa de adicionar uma carta já existente no mapa com InstanceID: ${carta.instanceId}`
-    );
+    ); */
   } else {
     cartasMap.set(carta.instanceId, carta);
-    console.log(
+    /*   //console.log(
       `Carta ${carta.name} de id ${carta.id} adicionada ao mapa para a key instanceId: ${carta.instanceId}`
-    );
+    ); */
   }
-  console.log("Current cartasMap:", Array.from(cartasMap.keys()));
+  //console.log("Current cartasMap:", Array.from(cartasMap.keys()));
 }
 
 // ----------------------------------------------------------------
@@ -454,7 +561,16 @@ const lastBreathEffectsCards = [
   {
     id: 16,
     name: "O Revivente Eterno",
-    lastBreath: () => {},
+    resurrection: true,
+    lastBreath: (cardObject, owner) => {
+      cardObject.currentHealth = cardObject.maxHealth;
+      const message = {
+        type: "nextRoundEffect",
+        effect: "resurrection",
+        data: { cardData: cardObject },
+      };
+      owner.ws.send(JSON.stringify(message));
+    },
   },
 
   {
@@ -466,28 +582,55 @@ const lastBreathEffectsCards = [
   {
     id: 18,
     name: "Fênix das Trevas Profana",
-    lastBreath: () => {},
+    resurrection: true,
+    lastBreath: (cardObject, owner) => {
+      const newAttack = Number(cardObject.currentAttack) + 1;
+      const newHealth = Number(cardObject.maxHealth) + 1;
+      cardObject.updateStats(newAttack, newHealth);
+      const message = {
+        type: "nextRoundEffect",
+        effect: "resurrection",
+        data: { cardData: cardObject },
+      };
+      owner.ws.send(JSON.stringify(message));
+    },
   },
 
   {
     id: 20,
     name: "O Espiritomante",
-    lastBreath: () => {},
+    resurrection: true,
+    lastBreath: (cardObject, owner) => {
+      cardObject.currentHealth = 1;
+      const message = {
+        type: "canPlayTheCard",
+        data: { novaCarta: cardObject },
+      };
+      owner.ws.send(JSON.stringify(message));
+    },
   },
 
   {
-    id: 21,
-    name: "Jeff-The-Death",
-    ressurrection: true,
+    id: 36,
+    name: "Espírito Carregado",
     lastBreath: (cardObject, owner) => {
-      const messageData = { 
-        cardObject : cardObject,
-        cardInstanceId : cardObject.instanceId
+      const message = {
+        type: "nextRoundEffect",
+        effectType: "manaAddition",
+        data: { cardData: cardObject , amount: 1},
       };
-      recallCard(messageData, owner);
-      const healingAmount = cardObject.maxHealth - cardObject.currentHealth;
-      healCard(cardObject.instanceId, healingAmount);
-      // fazê-lo custar 3 a menos
+      owner.ws.send(JSON.stringify(message));
+    },
+  },
+  {
+    id: 89,
+    name: "Vigia do Farol do Norte",
+    lastBreath: (cardObject, owner) => {
+      const message = {
+        type: "cardDrawOrder",
+        amount: 1
+      };
+      owner.ws.send(JSON.stringify(message));
     },
   },
 ];
@@ -521,20 +664,22 @@ function interpretDeckCode(deckCode, player) {
         cardData.baseHealth,
         cardData.baseHealth, // currentHealth inicial é igual ao baseHealth
         cardData.baseHealth, //maxHealth inicial é igual ao baseHealth
-        cardData.speed,
-        cardData.keywords || [] // Keywords ou um array vazio
+        cardData.baseSpeed,
+        cardData.baseSpeed, // currentSpeed inicial é igual ao baseSpeed inicialmente
+        cardData.keywords || [], // Keywords ou um array vazio
+        player.id // OwnerId igual ao id do jogador
       );
       // Adiciona a carta ao mapa usando o instanceId como chave
       player.deck.set(cardInstance.instanceId, cardInstance);
       addCartaToMap(cardInstance);
     } else {
-      console.error("ID de carta inválida:", cardId);
-      console.error("Por favor, insira um código de deck válido!");
+      //console.error("ID de carta inválida:", cardId);
+      //console.error("Por favor, insira um código de deck válido!");
     }
   });
 
-  console.log(`Deck do jogador ${player.id} antes do embaralhamento:`);
-  console.table(Array.from(player.deck.entries()));
+  //console.log(`Deck do jogador ${player.id} antes do embaralhamento:`);
+  //console.table(Array.from(player.deck.entries()));
 
   shuffleDeck(player.deck, player);
 }
@@ -543,12 +688,12 @@ function interpretDeckCode(deckCode, player) {
 
 function shuffleDeck(deck, player) {
   // Verifica se o modo de edição está ativo
-  console.log("editMode?", editMode);
+  //console.log("editMode?", editMode);
 
   // Converte o Map em um array de pares [chave, valor] e embaralha-o usando o algoritmo Fisher-Yates
   const deckArray = Array.from(deck.entries());
-  console.log("Deck como array antes do embaralhamento:");
-  console.table(deckArray);
+  //console.log("Deck como array antes do embaralhamento:");
+  //console.table(deckArray);
 
   for (let i = deckArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -569,7 +714,7 @@ function shuffleDeck(deck, player) {
     data: Array.from(player.deck.values()),
   };
 
-  console.log("Enviando deck embaralhado reformatado/convertido para um array");
+  //console.log("Enviando deck embaralhado reformatado/convertido para um array");
   player.ws.send(JSON.stringify(message));
 
   console.log("Tamanho do deck de cada jogador:");
@@ -593,12 +738,12 @@ function drawCardOrder(amount, player) {
     type: "cardDrawOrder",
     amount: amount,
   };
-  console.log(
+  /*   console.log(
     "Enviando mensagem de ordem de compra de carta para jogador. Quantidade e jogador respectivamente:"
-  );
-  //console.table({ amount }, { player });
+  ); */
+  ////console.table({ amount }, { player });
   player.ws.send(JSON.stringify(message));
-  console.log("A mensagem foi enviada ao jogador.");
+  //console.log("A mensagem foi enviada ao jogador.");
 }
 
 function updateCardState(cardData, state) {
@@ -611,7 +756,7 @@ function updateCardState(cardData, state) {
 function playCard(cardInstanceId, slotNumber, player) {
   let message = {};
 
-  console.log("playCard (serverSide) triggered.");
+  //console.log("playCard (serverSide) triggered.");
 
   const card = cartasMap.get(Number(cardInstanceId));
 
@@ -632,10 +777,10 @@ function playCard(cardInstanceId, slotNumber, player) {
         data: { card, slotNumber },
       };
     } else {
-      console.error("Mana do jogador insuficiente para jogar a carta.");
-      console.log(
+      //console.error("Mana do jogador insuficiente para jogar a carta.");
+      /*    console.log(
         `Mana necessária: ${requiredMana}. Mana disponível: ${availableMana}`
-      );
+      ); */
       message = {
         type: "cannotPlayTheCard",
         message: "Mana do jogador insuficiente. Jogada negada pelo servidor.",
@@ -643,15 +788,181 @@ function playCard(cardInstanceId, slotNumber, player) {
     }
     player.ws.send(JSON.stringify(message));
   } else {
-    console.error(
+    /*     console.error(
       `Carta instância da classe Carta não encontrada para a instanceId: ${Number(
         cardInstanceId
       )}`
-    );
+    ); */
   }
 }
 
 //-----------------------------
+
+function enableAttackForTheCard(messageData, player) {
+  const { instanceId } = messageData;
+
+  if (instanceId) {
+    const carta = cartasMap.get(Number(instanceId));
+    if (carta instanceof Carta) {
+      carta.ready = true;
+
+      const message = {
+        type: "card Attack enabled",
+        data: { carta },
+      };
+
+      player.ws.send(JSON.stringify(message));
+    } else {
+      //console.error('Instância-objeto carta não encontrado ou não é instância da classe Carta.');
+    }
+  } else {
+    //console.error(`instanceId: ${instanceId} inválido.`);
+  }
+}
+
+//-----------------------------
+
+// Função para verificar morte e mover para o graveyard
+function checkDeathAndAddToGraveyard(carta) {
+  if (carta.currentHealth > 0) return false; // Se a carta não morreu, sai da função
+
+  const cardOwner = players.find((p) => p.id === carta.ownerId);
+
+  if (!cardOwner) {
+    console.error(
+      `Erro: jogador de ID (${carta.ownerId}) não encontrado para a carta ${carta.name} ${carta.instanceId}.`
+    );
+    return false;
+  }
+
+  if (carta.keywords.includes("último suspiro")) {
+    const lastBreathEffectCard = lastBreathEffectsCards.find(
+      (card) => card.id == carta.id
+    );
+
+    if (lastBreathEffectCard?.lastBreath) {
+      console.log(
+        `Executando efeito de último suspiro para a carta ${carta.name}.`
+      );
+      console.log(`Dono da carta: ${cardOwner.nickname}`);
+      lastBreathEffectCard.lastBreath(carta, cardOwner); // Executa o efeito de último suspiro
+
+      if (lastBreathEffectCard.resurrection) {
+        console.log(
+          "A adição da carta à graveyard não ocorrerá, porque o último suspiro se trata de alguma espécie de ressureição."
+        );
+        return false;
+      }
+    }
+  }
+
+  cardOwner.graveyard.set(carta.instanceId, carta); // Move a carta para o graveyard
+  return true;
+}
+
+function checkAndExecuteGraveyardEffects() {
+  console.log("Checando e executando efeitos de interação com a graveyard.");
+  const allCardsInCurrentGame = Array.from(cartasMap.values());
+
+  allCardsInCurrentGame.forEach((card) => {
+    const cardWithEffect = graveyardInteractions.find((c) => c.id == card.id);
+
+    if (!cardWithEffect) return; // Se não houver interação, pula para a próxima carta
+
+    const { effect, inFieldOnly } = cardWithEffect;
+
+    if (typeof effect !== "function") {
+      console.error(
+        `Efeito de interação com graveyard não é uma função para a carta: ${card.name} de id: ${card.id} e instanceId: ${card.instanceId}.`
+      );
+      return;
+    }
+
+    const carta = cartasMap.get(Number(card.instanceId));
+
+    if (!inFieldOnly || card.state === "field") {
+      const message = effect(carta);
+      players.forEach((p) => {
+        p.ws.send(JSON.stringify(message));
+      });
+    }
+  });
+}
+
+// variável para controlar as cartas destruídas ao longo da partida
+let cardsDestroyed = {
+  byAllMeans: {
+    byPlayer1: 0,
+    byPlayer2: 0,
+  },
+  combatDamageOnly: {
+    byPlayer1: 0,
+    byPlayer2: 0,
+  },
+  allDamageSources: {
+    byPlayer1: 0,
+    byPlayer2: 0,
+  },
+  directDamageOnly: {
+    byPlayer1: 0,
+    byPlayer2: 0,
+  },
+  destructionEffects: {
+    byPlayer1: 0,
+    byPlayer2: 0,
+  },
+};
+
+// Função para atualizar contadores de cartas destruídas
+function updateCardsDestroyed(carta, cause) {
+  const ownerId = carta.ownerId;
+  const isPlayer1 = ownerId === player1.id;
+
+  // Usar switch para lidar com diferentes causas
+  switch (cause) {
+    case "combatDamage":
+      if (isPlayer1) {
+        cardsDestroyed.combatDamageOnly.byPlayer1 += 1;
+        cardsDestroyed.allDamageSources.byPlayer1 += 1;
+      } else {
+        cardsDestroyed.combatDamageOnly.byPlayer2 += 1;
+        cardsDestroyed.allDamageSources.byPlayer2 += 1;
+      }
+      break;
+
+    case "directDamage":  
+    if (isPlayer1) {
+      cardsDestroyed.directDamageOnlybyPlayer1 += 1;
+      cardsDestroyed.allDamageSources.byPlayer1 += 1;
+    } else {
+      cardsDestroyed.directDamageOnlybyPlayer2 += 1;
+      cardsDestroyed.allDamageSources.byPlayer2 += 1;
+    }
+    break;
+
+    case "destructionEffect":
+      if (isPlayer1) {
+        cardsDestroyed.destructionEffects.byPlayer1 += 1;
+      } else {
+        cardsDestroyed.destructionEffects.byPlayer2 += 1;
+      }
+      break;
+
+    default:
+      console.warn(`Causa desconhecida: ${cause}`);
+      break;
+  }
+
+  // Incrementa "byAllMeans" para todas as causas
+  if (isPlayer1) {
+    cardsDestroyed.byAllMeans.byPlayer1 += 1;
+  } else {
+    cardsDestroyed.byAllMeans.byPlayer2 += 1;
+  }
+  console.log('cardsDestroyed: ');
+  console.table(cardsDestroyed);
+}
+
 
 function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
   // Recupera a instância da carta atacabte a partir do mapa usando o ID
@@ -661,66 +972,64 @@ function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
   const cartaAlvo = cartasMap.get(Number(cartaAlvoInstanceId));
 
   if (!cartaAtacante || !cartaAlvo) {
-    console.error(
-      `Erro ao encontrar as cartas pelos instanceId's (${
-        (cartaAlvoInstanceId, cartaAtacanteInstanceId)
-      }). Verifique se os IDs estão corretos.`
-    );
     return;
   }
 
-  // Função auxiliar para verificar morte e mover para o graveyard
-  function checkDeathAndAddToGraveyard(carta) {
-    if (carta.currentHealth <= 0) {
-      console.log(
-        `A carta ${carta.name} morreu e será movida para o graveyard.`
-      );
+  if (!cartaAtacante.ready) {
+    const message = {
+      type: "cardCantAttack",
+      data: { cartaAtacanteInstanceId },
+    };
 
-      // Verifica se a carta tem o efeito "último suspiro"
-      if (carta.keywords.includes("último suspiro")) {
-        const lastBreathEffectCard = lastBreathEffectsCards.find(
-          (card) => card.id == carta.id
-        );
-        if (
-          lastBreathEffectCard &&
-          typeof lastBreathEffectCard.lastBreath === "function"
-        ) {
-          console.log(
-            `Executando efeito de último suspiro para a carta ${carta.name}.`
-          );
-          lastBreathEffectCard.lastBreath(carta, player); // Chama o efeito da carta
-
-          if (lastBreathEffectCard.ressurrection) {
-            console.log('A adição da carta à graveyard não ocorrerá, porque o último suspiro se trata de alguma espécie de ressureição.');
-            return;
-          }
-
-        }
-      }
-
-      // Determina o graveyard correto com base em isAlly
-      if (carta.isAlly) {
-        console.log(
-          `Movendo carta ${carta.name} para o graveyard do jogador aliado.`
-        );
-        player.graveyard.set(carta.instanceId, carta);
-      } else {
-        console.log(
-          `Movendo carta ${carta.name} para o graveyard do oponente.`
-        );
-        const opposingPlayer = players.find((p) => p.id !== player.id);
-        opposingPlayer.graveyard.set(carta.instanceId, carta);
-      }
-    }
+    player.ws.send(JSON.stringify(message));
+    return;
   }
 
   const atacantePreviousHealth = cartaAtacante.currentHealth;
   const alvoPreviousHealth = cartaAlvo.currentHealth;
-  cartaAtacante.attack(cartaAlvo);
+
+  const ataqueDoAtacante = cartaAtacante.currentAttack;
+
+  // Carta atacante ataca carta alvo
+  const attackResult = cartaAtacante.attack(cartaAlvo);
+
+  // Se o resultado retornado pela função/método possuir a propriedade `type`, então o ataque não foi bem-sucedido.
+  if (attackResult?.hasOwnProperty("type")) {
+    player.ws.send(JSON.stringify(attackResult)); // Enviar a mensagem, valor retornado pela função de ataque
+    return;
+  }
+
+  if (
+    cartaAtacante.keywords.includes("dano excessivo") &&
+    cartaAlvo.currentHealth <= 0
+  ) {
+    const targetHealthAfterHit = alvoPreviousHealth - ataqueDoAtacante;
+    const excessDamage = Math.abs(targetHealthAfterHit);
+    console.log(`excessDamage: ${excessDamage}.`);
+    const avatarId = cartaAtacante.ownerId == player.id ? "opponent-health" : "player-health";
+    directDamageToAvatar(excessDamage, avatarId, player);
+  }
+
+  if (cartaAtacante.keywords.includes("congelante")) {
+    cartaAlvo.addKeyword("congelamento");
+    const message = {
+      type: 'keywordAdded',
+      data: {cardData: cartaAlvo, keyword: 'congelamento', operation: 'addition'}
+    }
+    players.forEach((p) => {
+      p.ws.send(JSON.stringify(message));
+    })
+  }
+
+  cartaAtacante.ready = false;
   const atacanteNewHealth = cartaAtacante.currentHealth;
   const alvoNewHealth = cartaAlvo.currentHealth;
 
-  if (atacanteNewHealth === atacantePreviousHealth && alvoNewHealth === alvoPreviousHealth) {
+  if (
+    atacanteNewHealth === atacantePreviousHealth &&
+    alvoNewHealth === alvoPreviousHealth
+  ) {
+    console.warn("Vida do atacante e vida do alvo são iguais aos valores de vida anteriores.");
     return;
   }
 
@@ -729,13 +1038,17 @@ function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
   cartasMap.set(Number(cartaAlvoInstanceId), cartaAlvo);
 
   // Verificar se as cartas morreram
-  checkDeathAndAddToGraveyard(cartaAtacante);
-  checkDeathAndAddToGraveyard(cartaAlvo);
+  [cartaAtacante, cartaAlvo].forEach((carta, index) => {
+    if (checkDeathAndAddToGraveyard(carta)) {
+      checkAndExecuteGraveyardEffects();
+      updateCardsDestroyed(carta, "combatDamage");
+    }
+  });
 
-  console.log(
+  /*   console.log(
     `Vida da carta atacante após o ataque: ${cartaAtacante.currentHealth}`
-  );
-  console.log(`Vida da carta alvo após o ataque: ${cartaAlvo.currentHealth}`);
+  ); */
+  //console.log(`Vida da carta alvo após o ataque: ${cartaAlvo.currentHealth}`);
 
   // Cria a mensagem para enviar ao cliente
   let message = {
@@ -752,26 +1065,42 @@ function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
 
 //-----------------------------
 
-function damageAvatar(data, player) {
+function attackAvatar(data, player) {
   let messageToPlayer;
   let messageToTheOtherPlayer;
 
-  const target = data.target;
-  const cartaAtacanteInstanceId = data.cartaAtacanteInstanceId;
+  console.table(data);
+  const { cartaAtacanteInstanceId, targetAvatar } = data;
+
+  // Inicializar o outro jogador
+  const otherPlayer = players.find((p) => p.id !== player.id);
+
+  const directDamage = false;
 
   // Verifica se há um alvo e uma carta atacante válida
-  if (target && cartaAtacanteInstanceId) {
+  if (targetAvatar && cartaAtacanteInstanceId) {
     const carta = cartasMap.get(Number(cartaAtacanteInstanceId));
 
     if (carta) {
+      if (!carta.ready) {
+        //console.warn(`A carta ${carta.name} de instanceId ${carta.instanceId} não está pronta para atacar.`);
+
+        const message = {
+          type: "cardCantAttack",
+          data: { cartaAtacanteInstanceId },
+        };
+        player.ws.send(JSON.stringify(message));
+        return;
+      }
+
       const damage = carta.currentAttack;
 
       // Log inicial para identificar a função sendo chamada
       console.log(
-        `damageAvatar foi chamado. Damage: ${damage}, Target: ${target}, Player ID: ${player.id}`
+        `attackAvatar foi chamado. Damage: ${damage}, Target: ${targetAvatar}, Player ID: ${player.id}`
       );
 
-      if (target === "enemy") {
+      if (targetAvatar === "enemy") {
         // Aplica dano ao avatar inimigo
         enemyAvatar.takeDamage(damage);
 
@@ -780,12 +1109,16 @@ function damageAvatar(data, player) {
           `Inimigo recebeu dano. Nova saúde do inimigo: ${enemyAvatar.health}`
         );
 
+        otherPlayer.avatarLife = enemyAvatar.health;
+
         // Mensagem enviada ao jogador atual, indicando que o inimigo tomou dano
         messageToPlayer = {
           type: "applyDamageToAvatar",
           data: {
+            carta,
             avatarData: enemyAvatar,
-            target: "enemy", // O jogador está atacando o inimigo
+            targetAvatar: "enemy", // O jogador está atacando o inimigo
+            directDamage,
           },
         };
 
@@ -793,8 +1126,10 @@ function damageAvatar(data, player) {
         messageToTheOtherPlayer = {
           type: "applyDamageToAvatar",
           data: {
+            carta,
             avatarData: enemyAvatar,
-            target: "ally", // O outro jogador vê seu avatar sendo danificado
+            targetAvatar: "ally", // O outro jogador vê seu avatar sendo danificado
+            directDamage,
           },
         };
       } else {
@@ -806,12 +1141,16 @@ function damageAvatar(data, player) {
           `Aliado recebeu dano. Nova saúde do aliado: ${alliedAvatar.health}`
         );
 
+        player.avatarLife = alliedAvatar.health;
+
         // Mensagem enviada ao jogador atual, indicando que o aliado tomou dano
         messageToPlayer = {
           type: "applyDamageToAvatar",
           data: {
+            carta,
             avatarData: alliedAvatar,
-            target: "ally", // O jogador vê seu avatar sendo danificado
+            targetAvatar: "ally", // O jogador vê seu avatar sendo danificado
+            directDamage,
           },
         };
 
@@ -819,17 +1158,20 @@ function damageAvatar(data, player) {
         messageToTheOtherPlayer = {
           type: "applyDamageToAvatar",
           data: {
+            carta,
             avatarData: alliedAvatar,
-            target: "enemy", // O outro jogador vê seu inimigo sendo danificado
+            targetAvatar: "enemy", // O outro jogador vê seu inimigo sendo danificado
+            directDamage,
           },
         };
       }
 
+      carta.ready = false;
+      //console.log(`A carta ${carta.name} de instanceId ${carta.instanceId} não pode mais atacar nesta rodada (carta.ready = ${carta.ready})`);
+
       // Envia a mensagem ao jogador atual
       player.ws.send(JSON.stringify(messageToPlayer));
 
-      // Encontra o outro jogador e envia a mensagem correspondente
-      const otherPlayer = players.find((p) => p.id !== player.id);
       otherPlayer.ws.send(JSON.stringify(messageToTheOtherPlayer));
 
       // Log para confirmar o envio das mensagens
@@ -847,10 +1189,14 @@ function damageAvatar(data, player) {
 //-----------------------------
 
 function dealDirectDamage(damage, cardInstanceId) {
-  console.log("dealDirectDamage chamada.");
+  //console.log("dealDirectDamage chamada.");
   const carta = cartasMap.get(Number(cardInstanceId));
   if (carta instanceof Carta) {
-    carta.takeDamage(damage);
+    if (carta.takeDamage(damage)) {
+      if (checkDeathAndAddToGraveyard(carta)) {
+        updateCardsDestroyed(carta, 'directDamage');
+      };  
+    };
 
     let message = {
       type: "applyDamageToCard",
@@ -861,88 +1207,90 @@ function dealDirectDamage(damage, cardInstanceId) {
       p.ws.send(JSON.stringify(message));
     });
   } else {
-    console.warn(
+    /*     console.warn(
       `Não foi possível encontrar a carta no mapa de cartas para o instanceId (${cardInstanceId})`
-    );
+    ); */
   }
 }
 
 //-----------------------------
 
 function directDamageToAvatar(damage, avatarId, player) {
-  console.log(
+  /*   console.log(
     `directDamageToAvatar chamada. Damage: ${damage}, avatarId: ${avatarId}, Player: ${player.nickname}`
   );
-
+ */
   let messageToPlayer;
   let messageToTheOtherPlayer;
 
   // Encontra o outro jogador e envia a mensagem
   const theOtherPlayer = players.find((p) => p.id !== player.id);
 
+  const directDamage = true;
+
   // Aplica dano ao avatar correspondente
   if (avatarId === "player-health") {
-    console.log("Aplicando dano ao avatar aliado.");
-    console.log(`Vida do avatar antes: ${alliedAvatar.health}`);
+    //console.log("Aplicando dano ao avatar aliado.");
+    //console.log(`Vida do avatar antes: ${alliedAvatar.health}`);
     alliedAvatar.takeDamage(damage);
-    console.log(`Vida do avatar depois: ${alliedAvatar.health}`);
+    //console.log(`Vida do avatar depois: ${alliedAvatar.health}`);
 
     // Prepara a mensagem a ser enviada para o jogador atual
     messageToPlayer = {
       type: "applyDamageToAvatar",
-      data: { target: "ally", avatarData: alliedAvatar },
+      data: { targetAvatar: "ally", avatarData: alliedAvatar, directDamage },
     };
 
     // Prepara a mensagem a ser enviada para o outro jogador
     messageToTheOtherPlayer = {
       type: "applyDamageToAvatar",
-      data: { target: "opponent", avatarData: alliedAvatar },
+      data: { targetAvatar: "opponent", avatarData: alliedAvatar, directDamage },
     };
 
     // Envia a mensagem ao jogador atual
-    console.log(`Enviando mensagem de dano para o jogador: ${player.nickname}`);
+    //console.log(`Enviando mensagem de dano para o jogador: ${player.nickname}`);
     player.ws.send(JSON.stringify(messageToPlayer));
 
     if (theOtherPlayer) {
-      console.log(
+      /*     console.log(
         `Enviando mensagem de dano para o outro jogador: ${theOtherPlayer.nickname}`
-      );
+      ); */
       theOtherPlayer.ws.send(JSON.stringify(messageToTheOtherPlayer));
     } else {
-      console.error("Outro jogador não encontrado.");
+      //console.error("Outro jogador não encontrado.");
     }
   } else if (avatarId === "opponent-health") {
-    console.log("Aplicando dano ao avatar inimigo.");
-    console.log(`Vida do avatar antes: ${enemyAvatar.health}`);
+    //console.log("Aplicando dano ao avatar inimigo.");
+    //console.log(`Vida do avatar antes: ${enemyAvatar.health}`);
     enemyAvatar.takeDamage(damage);
-    console.log(`Vida do avatar depois: ${enemyAvatar.health}`);
+    //console.log(`Vida do avatar depois: ${enemyAvatar.health}`);
 
     // Prepara a mensagem a ser enviada para o jogador atual
     messageToPlayer = {
       type: "applyDamageToAvatar",
-      data: { target: "opponent", avatarData: enemyAvatar },
+      data: { targetAvatar: "enemy", avatarData: enemyAvatar, directDamage },
     };
 
     // Prepara a mensagem a ser enviada para o outro jogador
     messageToTheOtherPlayer = {
       type: "applyDamageToAvatar",
-      data: { target: "ally", avatarData: enemyAvatar },
+      data: { targetAvatar: "ally", avatarData: enemyAvatar, directDamage },
     };
 
     // Envia a mensagem ao jogador atual
-    console.log(`Enviando mensagem de dano para o jogador: ${player.nickname}`);
+    //console.log(`Enviando mensagem de dano para o jogador: ${player.nickname}`);
     player.ws.send(JSON.stringify(messageToPlayer));
 
     if (theOtherPlayer) {
-      console.log(
+      /*     console.log(
         `Enviando mensagem de dano para o outro jogador: ${theOtherPlayer.nickname}`
-      );
+      ); */
       theOtherPlayer.ws.send(JSON.stringify(messageToTheOtherPlayer));
     } else {
-      console.error("Outro jogador não encontrado.");
+      //console.error("Outro jogador não encontrado.");
     }
   } else {
-    console.error(`avatarId inválido: ${avatarId}`);
+    //console.error(`avatarId inválido: ${avatarId}`);
     return; // Sai da função caso o avatarId não seja válido
   }
 }
@@ -960,17 +1308,17 @@ function healCard(instanceId, healingAmount) {
       data: carta,
     };
 
-    console.log(
+    /*     console.log(
       "Enviando mensagem de ordem de aplicação de cura a carta do servior para os jogadores."
-    );
+    ); */
 
     players.forEach((p) => {
       p.ws.send(JSON.stringify(message));
     });
   } else {
-    console.warn(
+    /*     console.warn(
       `Carta não encontrada no mapa para a instanceId: ${instanceId}`
-    );
+    ); */
   }
 }
 
@@ -1032,67 +1380,98 @@ function healAvatar(avatarType, healingAmount, player) {
 //------------------------------
 
 function recallCard(messageData, player) {
-  console.log("recallCard (server-side) chamada.");
+  //console.log("recallCard (server-side) chamada.");
 
   const cardInstanceId = Number(messageData.cardInstanceId);
 
-  const cardOwner = messageData.cardOwner;
+  const cardOwner = player;
 
   const otherPlayer = players.find((p) => p.id !== player.id);
 
-  let carta = cartasMap.get(cardInstanceId);
+  const carta = cartasMap.get(cardInstanceId);
 
   if (carta instanceof Carta) {
-    carta.changeState("hand");
+    const messageToTheOwner = {
+      type: "recallCardOrder",
+      data: carta,
+    };
 
-    if (cardOwner === "me") {
-      let messageToPlayer = {
-        type: "recallCardOrder",
-        data: carta,
-      };
-
-      let messageToTheOtherPlayer = {
-        type: "removeCardFromTheField",
-        data: carta,
-      };
-
-      player.ws.send(JSON.stringify(messageToPlayer));
-      otherPlayer.ws.send(JSON.stringify(messageToTheOtherPlayer));
-
-      console.log("Mensagens enviadas do servidor de volta para os jogadores.");
-    } else {
-      let messageToPlayer = {
-        type: "removeCardFromTheField",
-        data: carta,
-      };
-
-      let messageToTheOtherPlayer = {
-        type: "recallCardOrder",
-        data: carta,
-      };
-
-      player.ws.send(JSON.stringify(messageToPlayer));
-      otherPlayer.ws.send(JSON.stringify(messageToTheOtherPlayer));
-
-      console.log("Mensagens enviadas do servidor de volta para os jogadores.");
-    }
-  } else {
-    console.error(
-      `Carta não encontrada ou não é uma instância de carta para a instanceId: ${cardInstanceId}`
-    );
+    const messageToTheOtherPlayer = {
+      type: "removeCardFromTheField",
+      data: carta,
+    };
+    cardOwner.ws.send(JSON.stringify(messageToTheOwner));
+    otherPlayer.ws.send(JSON.stringify(messageToTheOtherPlayer));
   }
+}
+
+//------------------------------
+function handleSpeedUpdateRequest(data, requestType, player) {
+  const { cardInstanceId, amount } = data;
+
+  if (!cardInstanceId || isNaN(amount)) {
+    /*     console.error(
+      "Valores da variável cardInstanceId ou da variável amount recebidos do cliente inválidos ou inexistentes."
+    ); */
+    return;
+  }
+
+  const carta = cartasMap.get(Number(cardInstanceId));
+
+  if (!(carta instanceof Carta)) {
+    console.error(
+      `Carta com instanceId ${cardInstanceId} não encontrada no mapa ou não é instância da classe Carta.`
+    );
+    return;
+  }
+
+  console.log(
+    `Velocidade da carta ${carta.name}, de instanceId = ${carta.instanceId} ANTES: ${carta.currentSpeed}`
+  );
+
+  if (requestType === "increase") {
+    // Aumenta a velocidade, limitando a um máximo de 6
+    carta.currentSpeed = Math.min(carta.currentSpeed + Number(amount), 6);
+  } else if (requestType === "decrease") {
+    // Diminui a velocidade, limitando a um mínimo de -1
+    carta.currentSpeed = Math.max(carta.currentSpeed - Number(amount), -1);
+  } else {
+    console.error(`Valor de requestType = ${requestType} indefinido/inválido.`);
+    return;
+  }
+
+  console.log(
+    `Velocidade da carta ${carta.name}, de instanceId = ${carta.instanceId} DEPOIS: ${carta.currentSpeed}`
+  );
+
+  const message = {
+    type: "cardSpeedUpdated",
+    data: carta,
+  };
+
+  console.log("Tentando enviar mensagem ao cliente...");
+  player.ws.send(JSON.stringify(message));
+  console.log("Mensagem enviada com sucesso.");
 }
 
 //------------------------------
 
 function keywordAddition(instanceId, keyword) {
   const carta = cartasMap.get(Number(instanceId));
-  if (carta instanceof Carta) {
-    carta.addKeyword(keyword);
+  if (!carta instanceof Carta) {
+    /*     console.error(
+      `Objeto de carta inválido - não encontrado no mapa para a instanceId (${instanceId}) ou não é instância da classe Carta.`
+    ); */
+    return;
   }
+
+  carta.addKeyword(keyword);
+
+  console.log("CardData enviado ao cliente:", carta);
+
   const message = {
     type: "keywordAdded",
-    data: { cardData: carta, keyword },
+    data: { cardData: carta, keyword, operation: "addition" },
   };
 
   players.forEach((p) => {
@@ -1100,88 +1479,66 @@ function keywordAddition(instanceId, keyword) {
   });
 }
 
-function gameOver(winner) {
-  console.log("gameOver chamada.");
-  console.log(`winner: ${winner}`);
+function removeCardKeyword(data) {
+  const { cardInstanceId, removedKeywords } = data;
 
-  let messageToTheWinner = {
-    type: "gameOver",
-    data: "winner",
-  };
+  const carta = cartasMap.get(Number(cardInstanceId));
 
-  winner.ws.send(JSON.stringify(messageToTheWinner));
-  console.log("Mensagem enviada ao vencedor da partida.");
+  // Verifique se a carta foi encontrada
+  if (carta) {
+    // Remover as keywords negativas do objeto carta
+    removedKeywords.forEach((keyword) => {
+      console.log("Removendo keyword:", keyword);
+      carta.removeKeyword(keyword);
 
-  let messageToTheLoser = {
-    type: "gameOver",
-    data: "loser",
-  };
-
-  const loser = players.find((p) => p.id !== winner.id);
-  loser.ws.send(JSON.stringify(messageToTheLoser));
-  console.log("Mensagem enviada ao perdedor da partida.");
-}
-
-//------------------------------
-
-let currentTurnIndex = 1;
-
-function handleEndTurnRequest(player) {
-  if (player.id) {
-    turnEndRequests++;
-    if (turnEndRequests === 2) {
-      let message = {
-        type: "endTheTurnOrder",
+      const message = {
+        type: "keywordRemoved",
+        data: { cardData: carta, keyword, operation: "removal" },
       };
 
       players.forEach((p) => {
-        drawCardOrder(1, p);
         p.ws.send(JSON.stringify(message));
       });
+    });
+    console.log("Keywords após remoção:", carta.keywords);
 
-      console.log("Turno finalizado. Enviando mensagem para os jogadores.");
-      currentTurnIndex++;
-      turnEndRequests = 0;
-
-      executeNextTurnEffects();
-
-    } else {
-      console.log("turnEndRequests ainda não é igual a 2.");
-    }
+    // Você pode adicionar aqui qualquer lógica adicional, como notificar o cliente
+    //console.log(`Removed keywords: ${removedKeywords.join(', ')} from card ID: ${carta.id}`);
+  } else {
+    //console.warn(`Carta com ID ${cardInstanceId} não encontrada.`);
   }
 }
-
 
 //------------------------------
 
 function battlefieldUpdateOrder(message, player) {
-  console.log("battlefieldUpdateOrder triggered.");
-  console.log("Mensagem recebida:", message);
-  console.log("Tipo da mensagem:", message.type);
+  //console.log("battlefieldUpdateOrder triggered.");
+  //console.log("Mensagem recebida:", message);
+  //console.log("Tipo da mensagem:", message.type);
 
   let newMessage;
 
   if (message.type === "addCardToOpponentField") {
-    console.log("Tipo de mensagem é addCardToOpponentField.");
+    //console.log("Tipo de mensagem é addCardToOpponentField.");
 
     // Verifica se a carta está no mapa de cartas
     const carta = cartasMap.get(Number(message.data.cardInstanceId));
     if (!carta) {
-      console.error(
+      /*       console.error(
         `Carta com instanceId ${message.data.carta.instanceId} não encontrada no mapa de cartas.`
-      );
+      ); */
       return;
     }
 
-    console.log("Carta encontrada:", carta);
+    //console.log("Carta encontrada:", carta);
 
     // Atualiza o estado da carta
     carta.changeState("field");
-    console.log('Estado da carta alterado para "field".');
+    //console.log('Estado da carta alterado para "field".');
 
     // Remove a carta do deck do jogador
     player.deck.delete(Number(message.data.cardInstanceId));
-    console.log("Carta removida do deck do jogador.");
+    //console.log("Carta removida do deck do jogador.");
 
     const slotNumber = message.data.slotNumber;
 
@@ -1190,22 +1547,23 @@ function battlefieldUpdateOrder(message, player) {
       type: "addCardToOpponentField",
       data: { carta, slotNumber },
     };
-    console.log("Mensagem preparada para enviar ao oponente:", newMessage);
+    //console.log("Mensagem preparada para enviar ao oponente:", newMessage);
 
     // Envia a mensagem para o outro jogador
     const opponent = players.find((p) => p.id !== player.id);
     if (opponent) {
-      console.log(`Enviando mensagem para oponente ${opponent.id}.`);
+      //console.log(`Enviando mensagem para oponente ${opponent.id}.`);
       opponent.ws.send(JSON.stringify(newMessage));
     } else {
-      console.error("Oponente não encontrado.");
+      //console.error("Oponente não encontrado.");
     }
   } else if (message.type === "buffOrDebuffRequest") {
-    console.log("Tipo de mensagem é buffOrDebuffRequest.");
+    //console.log("Tipo de mensagem é buffOrDebuffRequest.");
 
-    const data = message.data;
+    const { data } = message;
     if (data) {
-      const cardInstanceId = Number(data.cardInstanceId);
+      let { cardInstanceId } = data;
+      cardInstanceId = Number(cardInstanceId);
 
       if (cardInstanceId) {
         let carta = cartasMap.get(cardInstanceId);
@@ -1222,25 +1580,25 @@ function battlefieldUpdateOrder(message, player) {
             type: "buffCard",
             data: carta,
           };
-          console.log(
+          /*           console.log(
             "Mensagem preparada para enviar ao oponente:",
             newMessage
-          );
+          ); */
 
           // Envia a mensagem para os jogadores atualizarem seus DOM's de modo a refletir a carta agora buffada
           players.forEach((p) => {
             p.ws.send(JSON.stringify(newMessage));
           });
         } else {
-          console.error(
+          /*           console.error(
             "Objeto de carta não encontrado para a instanceId:",
             cardInstanceId
-          );
+          ); */
         }
       } else {
-        console.error(
+        /*         console.error(
           "message.data não possui uma propriedade chamada cardInstanceId."
-        );
+        ); */
       }
     }
   } else if (message.type === "summonCardRequest") {
@@ -1258,8 +1616,10 @@ function battlefieldUpdateOrder(message, player) {
         baseCardData.baseHealth,
         baseCardData.baseHealth, // currentHealth inicial é igual ao baseHealth
         baseCardData.baseHealth, //maxHealth inicial é igual ao baseHealth
-        baseCardData.speed,
-        baseCardData.keywords || [] // Keywords ou um array vazio
+        baseCardData.baseSpeed,
+        baseCardData.baseSpeed, // currentSpeed inicial é igual à baseSpeed
+        baseCardData.keywords || [], // Keywords ou um array vazio
+        player.id // ownerId é igual a id do jogador que solicitou a invocação da carta
       );
       addCartaToMap(novaCarta);
 
@@ -1272,28 +1632,158 @@ function battlefieldUpdateOrder(message, player) {
 
       player.ws.send(JSON.stringify(newMessage));
     } else {
-      console.error(`Dados da carta não encontrados para a id: ${cardId}`);
+      //console.error(`Dados da carta não encontrados para a id: ${cardId}`);
     }
   } else {
-    console.error("Tipo de mensagem desconhecido:", message.type);
+    //console.error("Tipo de mensagem desconhecido:", message.type);
   }
 }
 
-// Defina um Set global para armazenar funções a serem executadas no próximo turno
-let nextTurnEffects = new Set();
+//------------------------------
 
-// Função para adicionar uma função ao Set de efeitos do próximo turno
-function addNextTurnEffect(effectFunction) {
-  nextTurnEffects.add(effectFunction);
+function handleSpecialBuffRequest(cardInstanceId, condition) {
+  //console.log(`Processando specialBuffRequest para cardInstanceId: ${cardInstanceId}, condição: ${condition}`);
+
+  const carta = cartasMap.get(Number(cardInstanceId));
+  if (!carta) {
+    console.error(
+      `Carta com instanceId ${cardInstanceId} não encontrada no cartasMap.`
+    );
+    return;
+  }
+
+  let newAttack = 0;
+  let newHealth = 0;
+
+  switch (condition) {
+    case "both-graveyard-size":
+      if (
+        players.length < 2 ||
+        !players[0].graveyard ||
+        !players[1].graveyard
+      ) {
+        console.error(
+          "Requisição falhou: Não há jogadores suficientes ou cemitérios não inicializados."
+        );
+        return;
+      }
+
+      const graveyard1 = Array.from(players[0].graveyard.entries()).length;
+      const graveyard2 = Array.from(players[1].graveyard.entries()).length;
+      const graveyardSize = graveyard1 + graveyard2;
+
+      //console.log(`Tamanho dos cemitérios: Jogador 1 = ${graveyard1}, Jogador 2 = ${graveyard2}, Total = ${graveyardSize}`);
+
+      newAttack = carta.currentAttack + graveyardSize;
+      newHealth = carta.currentHealth + graveyardSize;
+
+      carta.updateStats(newAttack, newHealth);
+
+      //console.log(`Nova carta: Ataque = ${newAttack}, Vida = ${newHealth}`);
+
+      break;
+    
+    case "cards-destroyed-by-effects":
+      const buff = cardsDestroyed.destructionEffects.byPlayer1 + cardsDestroyed.destructionEffects.byPlayer2;
+      newAttack = carta.currentAttack + buff;
+      newHealth = carta.currentHealth + buff;
+      carta.updateStats(newAttack, newHealth)
+      break;
+
+    default:
+      console.warn(`Condição desconhecida no specialBuffRequest: ${condition}`);
+      break;
+  }
+
+  const message = {
+    type: "buffCard",
+    data: carta,
+  };
+
+  players.forEach((p, index) => {
+    console.log(
+      `Enviando buffCard para Jogador ${index + 1}:`,
+      JSON.stringify(message)
+    );
+    p.ws.send(JSON.stringify(message));
+  });
+
 }
 
-// Função para executar todas as funções armazenadas no Set e limpar o Set após a execução
-function executeNextTurnEffects() {
-  nextTurnEffects.forEach((effectFunction) => effectFunction());
-  nextTurnEffects.clear(); // Limpa o Set após a execução
+function gameOver(winner) {
+  //console.log("gameOver chamada.");
+  //console.log(`winner: ${winner}`);
+
+  let messageToTheWinner = {
+    type: "gameOver",
+    data: "winner",
+  };
+
+  winner.ws.send(JSON.stringify(messageToTheWinner));
+  //console.log("Mensagem enviada ao vencedor da partida.");
+
+  let messageToTheLoser = {
+    type: "gameOver",
+    data: "loser",
+  };
+
+  const loser = players.find((p) => p.id !== winner.id);
+  loser.ws.send(JSON.stringify(messageToTheLoser));
+  //console.log("Mensagem enviada ao perdedor da partida.");
 }
 
-// Simula a transição para o próximo turno
-function onTurnEnd() {
-  executeNextTurnEffects(); // Executa todas as funções armazenadas
+//------------------------------
+
+let currentRoundIndex = 1;
+
+function handleEndRoundRequest(player) {
+  if (player.id) {
+    roundEndRequests++;
+
+    if (roundEndRequests === 1) {
+      const message2 = {
+        type: "yourTurn",
+        data: "you can play now.",
+      };
+      const theOtherPlayer = players.find((p) => p.id !== player.id);
+      theOtherPlayer.ws.send(JSON.stringify(message2));
+
+      const message1 = {
+        type: "notYourTurn",
+        data: "you cannot play now.",
+      };
+      player.ws.send(JSON.stringify(message1));
+    }
+
+    if (roundEndRequests === 2) {
+      const message = {
+        type: "endTheRoundOrder",
+      };
+
+      players.forEach((p) => {
+        drawCardOrder(1, p);
+        p.ws.send(JSON.stringify(message));
+      });
+
+      //console.log("Rodada finalizada. Enviando mensagem para os jogadores.");
+      currentRoundIndex++;
+      roundEndRequests = 0;
+
+      const message1 = {
+        type: "yourTurn",
+        data: "you can play now.",
+      };
+
+      const message2 = {
+        type: "notYourTurn",
+        data: "you cannot play now.",
+      };
+
+      whoPlaysFirst.ws.send(JSON.stringify(message1));
+      const secondToPlay = players.find((p) => p.id !== whoPlaysFirst.id);
+      secondToPlay.ws.send(JSON.stringify(message2));
+    } else {
+      //console.log("roundEndRequests ainda não é igual a 2.");
+    }
+  }
 }
