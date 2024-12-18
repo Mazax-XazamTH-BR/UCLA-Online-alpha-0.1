@@ -3782,8 +3782,8 @@ const clickListenersMap = new Map();
 const handElement = document.getElementById("hand");
 
 // WebSocket
-//const ws = new WebSocket("wss://uclagamewsserver.onrender.com");
-const ws = new WebSocket("ws://localhost:8081");
+const ws = new WebSocket("wss://uclagamewsserver.onrender.com");
+//const ws = new WebSocket("ws://localhost:8081");
 
 ws.onopen = () => {
   console.log("Eu sou um cliente e estou conectado ao servidor.");
