@@ -37,7 +37,7 @@ let handCardCount = 0;
 //pontuação
 let playerMatchPoints = 0;
 let opponentMatchPoints = 0;
-const yourScoreboard = document.querySelector("#score-player1");
+const yourScoreboard = document.querySelector("#your-score");
 const opponentScoreboard = document.querySelector("#score-player2");
 
 //rodadas
@@ -146,7 +146,7 @@ const cardsTextDescription = [
       5 de mana | 5/5
       (Elétrico| Alcance | Humano | Nulifária |) 
       #Grito de Guerra: “aplico *paralisia elétrica* a até duas cartas inimigas de sua escolha.” 
-      #Condicional: “sempre que uma carta do oponente for marcada com *paralisia elétrica*, causo metade do meu ataque (arredondado para cima) como dano *atravessante*.”
+      #Condicional: “sempre que uma carta do oponente for marcada com *paralisia elétrica*, causo 3 de dano a ela.”
       #Final da Rodada: “ataco sem sofrer dano todas as unidades paralisadas sobreviventes no final da rodada.”`,
   },
   {
@@ -798,8 +798,8 @@ Grito de Guerra: “causo 1 de dano e aplico "paralisia elétrica" a todas as ca
     name: "Dragãozinho Congelante",
     description: `Dragãozinho Congelante
 1 de mana |2/2
- (Glacial| Dragão) 
-*Congelante*
+ (Glacial| Voo | Dragão) 
+*Congelante*, *Voo*
 #Grito de Guerra: “congelo a carta inimiga mais fraca em campo.” `,
   },
   {
@@ -3199,7 +3199,7 @@ const cards = [
     baseAttack: 2,
     baseHealth: 2,
     baseSpeed: 1,
-    keywords: ["glacial", "grito de guerra", "congelante"],
+    keywords: ["glacial", "voo", "grito de guerra", "congelante"],
   },
   {
     id: 82,
@@ -6287,7 +6287,7 @@ function updateMatchScore(winnerOfTheRound) {
   if (winnerOfTheRound === "me") {
     //!isAmplifierActive ?
     playerMatchPoints += 2;
-    yourScoreboard.textContent = playerMatchPoints;
+    yourScoreboard.textContent = `Você (${player.username}): ${playerMatchPoints}`;
 
     alert("Muito bem. Você VENCEU este rodada!");
   } else if (winnerOfTheRound === "opponent") {

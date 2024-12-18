@@ -766,7 +766,7 @@ const cards = [
     baseAttack: 2,
     baseHealth: 2,
     baseSpeed: 1,
-    keywords: ["glacial", "grito de guerra", "congelante"],
+    keywords: ["glacial", "voo", "grito de guerra", "congelante"],
   },
   {
     id: 82,
@@ -966,7 +966,7 @@ const cardsTextDescription = [
       5 de mana | 5/5
       (Elétrico| Alcance | Humano | Nulifária |) 
       #Grito de Guerra: “aplico *paralisia elétrica* a até duas cartas inimigas de sua escolha.” 
-      #Condicional: “sempre que uma carta do oponente for marcada com *paralisia elétrica*, causo metade do meu ataque (arredondado para cima) como dano *atravessante*.”
+      #Condicional: “sempre que uma carta do oponente for marcada com *paralisia elétrica*, causo 3 de dano a ela.”
       #Final da Rodada: “ataco sem sofrer dano todas as unidades paralisadas sobreviventes no final da rodada.”`,
   },
   {
