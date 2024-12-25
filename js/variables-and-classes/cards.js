@@ -1,5 +1,3 @@
-import { Carta } from "./POO.js";
-
 const cards = [
   {
     id: 1,
@@ -197,7 +195,7 @@ const cards = [
     baseAttack: 3,
     baseHealth: 3,
     baseSpeed: 1,
-    keywords: ["nadaporenquanto"],
+    keywords: ["último suspiro", "obscuro", "morto-vivo"],
   },
   {
     id: 17,
@@ -217,7 +215,7 @@ const cards = [
     baseAttack: 3,
     baseHealth: 3,
     baseSpeed: 1,
-    keywords: ["nadaporenquanto"],
+    keywords: ["último suspiro", "voo", "obscuro"],
   },
   {
     id: 19,
@@ -405,7 +403,7 @@ const cards = [
   {
     id: 40,
     name: "Gigante Elétrico",
-    baseCost: 5,
+    baseCost: 4,
     image: "assets/cartas/eletrica/Gigante_Elétrico.png",
     baseAttack: 9,
     baseHealth: 8,
@@ -771,12 +769,19 @@ const cards = [
   {
     id: 82,
     name: "Espectro do Gelo Aprisionante",
-    baseCost: 3,
+    baseCost: 4,
     image: "assets/cartas/glacial/Espectro_do_Gelo_Aprisionante.png",
     baseAttack: 2,
-    baseHealth: 2,
+    baseHealth: 3,
     baseSpeed: 1,
-    keywords: ["glacial", "grito de guerra", "congelante", "voo", "espectro", "espírito"],
+    keywords: [
+      "glacial",
+      "grito de guerra",
+      "congelante",
+      "voo",
+      "espectro",
+      "espírito",
+    ],
   },
   {
     id: 83,
@@ -847,54 +852,10 @@ const cards = [
     baseHealth: 2,
     baseSpeed: 1,
     keywords: ["glacial", "grito de guerra", "humano", "último suspiro"],
-  }
+  },
 ];
 
-export { cards, graveyardInteractions };
-
-const graveyardInteractions = [
-  {
-    id: 22,
-    name: "Cientista da Morte",
-    inFieldOnly: true,
-    effect: (carta) => {
-      let tokenCardData = cards.find((c) => c.id === 22000);
-      const novaCarta = new Carta(
-        tokenCardData.id,
-        tokenCardData.name,
-        tokenCardData.baseCost,
-        tokenCardData.baseCost, // currentCost inicial é igual ao baseCost
-        tokenCardData.baseAttack,
-        tokenCardData.baseAttack, // currentAttack inicial é igual ao baseAttack
-        tokenCardData.baseHealth,
-        tokenCardData.baseHealth, // currentHealth inicial é igual ao baseHealth
-        tokenCardData.baseHealth, //maxHealth inicial é igual ao baseHealth
-        tokenCardData.baseSpeed,
-        tokenCardData.keywords || [] // Keywords ou um array vazio
-      );
-      const message = {
-        type: "canPlayTheCard",
-        data: { novaCarta },
-      };
-      return message;
-    },
-  },
-  {
-    id: 66,
-    name: "Diabrete Sombrio",
-    inFieldOnly: true,
-    effect: (carta) => {
-      const message = {
-        type: "cardDrawOrder",
-        amount: 1,
-      };
-      return message;
-    },
-  },
-  /*  {
-  id: 
- } */
-];
+export { cards, cardsTextDescription };
 
 const cardsTextDescription = [
   {
@@ -1073,7 +1034,7 @@ const cardsTextDescription = [
       5 de mana | 2/2 
       (Obscuro | Entidade |) 
       *Indestrutível*
-      #Grito de Guerra: “ganho +1/+1 para cada carta que foi destruída sem ser por dano ao longo desta partida.”`,
+      #Grito de Guerra: “ganho +1/+1 para cada carta que foi destruída por efeitos ou habilidades ao longo desta partida, exceto por dano.”`,
   },
   {
     id: 22,

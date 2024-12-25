@@ -28,3 +28,5 @@ const soundEffects = [
     soundFile: 'assets/SFX/cardDrawSound.mp3'
   }
 ];
+
+export default soundEffects;

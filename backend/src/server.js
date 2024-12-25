@@ -307,13 +307,13 @@ function handleMessageFromPlayer(parsedMessage, player) {
           carta.morrer();
           if (checkDeathAndAddToGraveyard(carta)) {
             checkAndExecuteGraveyardEffects();
-            const cause = 'destructionEffect'
+            const cause = "destructionEffect";
             updateCardsDestroyed(carta, cause);
           }
           let message = {
             type: "destroyCardOrder",
             data: carta,
-            destructionEffect: true
+            destructionEffect: true,
           };
           players.forEach((p) => {
             p.ws.send(JSON.stringify(message));
@@ -425,6 +425,10 @@ function handleMessageFromPlayer(parsedMessage, player) {
       }
       break;
 
+    case "removeCardFromTheGame":
+      removeCardFromTheGame(message.instanceId);
+      break;
+
     case "endRoundRequest":
       handleEndRoundRequest(player);
       break;
@@ -460,9 +464,13 @@ function handleMessageFromPlayer(parsedMessage, player) {
 
 // ---------------------------------------------
 
-import { cards, graveyardInteractions } from "../../js/cards.js";
+import { cards } from "../../js/variables-and-classes/cards.js";
 
-import { Carta, Avatar } from "../../js/POO.js";
+import { graveyardInteractions } from "../../js/variables-and-classes/graveyardInteractions.js";
+
+import { Carta, Avatar } from "../../js/variables-and-classes/POO.js";
+
+import { lastBreathEffectsCards } from "../../js/variables-and-classes/lastBreathCards.js";
 
 // Instância de Avatar para o inimigo e aliado
 const enemyAvatar = new Avatar(false, 25);
@@ -554,86 +562,6 @@ function addCartaToMap(carta) {
   }
   //console.log("Current cartasMap:", Array.from(cartasMap.keys()));
 }
-
-// ----------------------------------------------------------------
-
-const lastBreathEffectsCards = [
-  {
-    id: 16,
-    name: "O Revivente Eterno",
-    resurrection: true,
-    lastBreath: (cardObject, owner) => {
-      cardObject.currentHealth = cardObject.maxHealth;
-      const message = {
-        type: "nextRoundEffect",
-        effect: "resurrection",
-        data: { cardData: cardObject },
-      };
-      owner.ws.send(JSON.stringify(message));
-    },
-  },
-
-  {
-    id: 17,
-    name: "Replicador Maldito",
-    lastBreath: () => {},
-  },
-
-  {
-    id: 18,
-    name: "Fênix das Trevas Profana",
-    resurrection: true,
-    lastBreath: (cardObject, owner) => {
-      const newAttack = Number(cardObject.currentAttack) + 1;
-      const newHealth = Number(cardObject.maxHealth) + 1;
-      cardObject.updateStats(newAttack, newHealth);
-      const message = {
-        type: "nextRoundEffect",
-        effect: "resurrection",
-        data: { cardData: cardObject },
-      };
-      owner.ws.send(JSON.stringify(message));
-    },
-  },
-
-  {
-    id: 20,
-    name: "O Espiritomante",
-    resurrection: true,
-    lastBreath: (cardObject, owner) => {
-      cardObject.currentHealth = 1;
-      const message = {
-        type: "canPlayTheCard",
-        data: { novaCarta: cardObject },
-      };
-      owner.ws.send(JSON.stringify(message));
-    },
-  },
-
-  {
-    id: 36,
-    name: "Espírito Carregado",
-    lastBreath: (cardObject, owner) => {
-      const message = {
-        type: "nextRoundEffect",
-        effectType: "manaAddition",
-        data: { cardData: cardObject , amount: 1},
-      };
-      owner.ws.send(JSON.stringify(message));
-    },
-  },
-  {
-    id: 89,
-    name: "Vigia do Farol do Norte",
-    lastBreath: (cardObject, owner) => {
-      const message = {
-        type: "cardDrawOrder",
-        amount: 1
-      };
-      owner.ws.send(JSON.stringify(message));
-    },
-  },
-];
 
 // ----------------------------------------------------------------
 
@@ -851,16 +779,15 @@ function checkDeathAndAddToGraveyard(carta) {
         console.log(
           "A adição da carta à graveyard não ocorrerá, porque o último suspiro se trata de alguma espécie de ressureição."
         );
-        return false;
+        return true;
       }
     }
   }
-
   cardOwner.graveyard.set(carta.instanceId, carta); // Move a carta para o graveyard
   return true;
 }
 
-function checkAndExecuteGraveyardEffects() {
+function checkAndExecuteGraveyardEffects(destroyedCard) {
   console.log("Checando e executando efeitos de interação com a graveyard.");
   const allCardsInCurrentGame = Array.from(cartasMap.values());
 
@@ -878,16 +805,31 @@ function checkAndExecuteGraveyardEffects() {
       return;
     }
 
-    const carta = cartasMap.get(Number(card.instanceId));
+    const cartaComOEfeito = cartasMap.get(Number(card.instanceId));
 
     if (!inFieldOnly || card.state === "field") {
-      const message = effect(carta);
-      players.forEach((p) => {
-        p.ws.send(JSON.stringify(message));
-      });
+      const cardOwner = players.find((p) => p.id == cartaComOEfeito.ownerId);
+      const message = effect(cartaComOEfeito, destroyedCard);
+      if (typeof message === 'object' && message !== null) {
+        // Verifica se é um objeto
+        if ('message1' in message && 'message2' in message) {
+          // Caso contenha dois valores
+          console.log('Objeto contendo dois valores:', message.message1, message.message2);
+          cardOwner.ws.send(JSON.stringify(message.message1));
+          cardOwner.ws.send(JSON.stringify(message.message2));
+        } else {
+          // Caso seja um objeto com outros campos
+          console.log('Objeto com estrutura desconhecida:', message);
+        }
+      } else {
+        // Caso seja um valor simples
+        console.log('Valor simples:', message);
+        cardOwner.ws.send(JSON.stringify(message));
+      }
     }
   });
 }
+// ------------------------------------
 
 // variável para controlar as cartas destruídas ao longo da partida
 let cardsDestroyed = {
@@ -913,6 +855,8 @@ let cardsDestroyed = {
   },
 };
 
+// ------------------------------------
+
 // Função para atualizar contadores de cartas destruídas
 function updateCardsDestroyed(carta, cause) {
   const ownerId = carta.ownerId;
@@ -930,15 +874,15 @@ function updateCardsDestroyed(carta, cause) {
       }
       break;
 
-    case "directDamage":  
-    if (isPlayer1) {
-      cardsDestroyed.directDamageOnlybyPlayer1 += 1;
-      cardsDestroyed.allDamageSources.byPlayer1 += 1;
-    } else {
-      cardsDestroyed.directDamageOnlybyPlayer2 += 1;
-      cardsDestroyed.allDamageSources.byPlayer2 += 1;
-    }
-    break;
+    case "directDamage":
+      if (isPlayer1) {
+        cardsDestroyed.directDamageOnlybyPlayer1 += 1;
+        cardsDestroyed.allDamageSources.byPlayer1 += 1;
+      } else {
+        cardsDestroyed.directDamageOnlybyPlayer2 += 1;
+        cardsDestroyed.allDamageSources.byPlayer2 += 1;
+      }
+      break;
 
     case "destructionEffect":
       if (isPlayer1) {
@@ -959,10 +903,9 @@ function updateCardsDestroyed(carta, cause) {
   } else {
     cardsDestroyed.byAllMeans.byPlayer2 += 1;
   }
-  console.log('cardsDestroyed: ');
+  console.log("cardsDestroyed: ");
   console.table(cardsDestroyed);
 }
-
 
 function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
   // Recupera a instância da carta atacabte a partir do mapa usando o ID
@@ -1006,19 +949,24 @@ function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
     const targetHealthAfterHit = alvoPreviousHealth - ataqueDoAtacante;
     const excessDamage = Math.abs(targetHealthAfterHit);
     console.log(`excessDamage: ${excessDamage}.`);
-    const avatarId = cartaAtacante.ownerId == player.id ? "opponent-health" : "player-health";
+    const avatarId =
+      cartaAtacante.ownerId == player.id ? "opponent-health" : "player-health";
     directDamageToAvatar(excessDamage, avatarId, player);
   }
 
   if (cartaAtacante.keywords.includes("congelante")) {
     cartaAlvo.addKeyword("congelamento");
     const message = {
-      type: 'keywordAdded',
-      data: {cardData: cartaAlvo, keyword: 'congelamento', operation: 'addition'}
-    }
+      type: "keywordAdded",
+      data: {
+        cardData: cartaAlvo,
+        keyword: "congelamento",
+        operation: "addition",
+      },
+    };
     players.forEach((p) => {
       p.ws.send(JSON.stringify(message));
-    })
+    });
   }
 
   cartaAtacante.ready = false;
@@ -1029,7 +977,9 @@ function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
     atacanteNewHealth === atacantePreviousHealth &&
     alvoNewHealth === alvoPreviousHealth
   ) {
-    console.warn("Vida do atacante e vida do alvo são iguais aos valores de vida anteriores.");
+    console.warn(
+      "Vida do atacante e vida do alvo são iguais aos valores de vida anteriores."
+    );
     return;
   }
 
@@ -1040,15 +990,16 @@ function attackCard(cartaAlvoInstanceId, cartaAtacanteInstanceId, player) {
   // Verificar se as cartas morreram
   [cartaAtacante, cartaAlvo].forEach((carta, index) => {
     if (checkDeathAndAddToGraveyard(carta)) {
-      checkAndExecuteGraveyardEffects();
+      checkAndExecuteGraveyardEffects(carta);
       updateCardsDestroyed(carta, "combatDamage");
     }
   });
 
-  /*   console.log(
+  console.log(
     `Vida da carta atacante após o ataque: ${cartaAtacante.currentHealth}`
-  ); */
-  //console.log(`Vida da carta alvo após o ataque: ${cartaAlvo.currentHealth}`);
+  );
+
+  console.log(`Vida da carta alvo após o ataque: ${cartaAlvo.currentHealth}`);
 
   // Cria a mensagem para enviar ao cliente
   let message = {
@@ -1194,9 +1145,9 @@ function dealDirectDamage(damage, cardInstanceId) {
   if (carta instanceof Carta) {
     if (carta.takeDamage(damage)) {
       if (checkDeathAndAddToGraveyard(carta)) {
-        updateCardsDestroyed(carta, 'directDamage');
-      };  
-    };
+        updateCardsDestroyed(carta, "directDamage");
+      }
+    }
 
     let message = {
       type: "applyDamageToCard",
@@ -1244,7 +1195,11 @@ function directDamageToAvatar(damage, avatarId, player) {
     // Prepara a mensagem a ser enviada para o outro jogador
     messageToTheOtherPlayer = {
       type: "applyDamageToAvatar",
-      data: { targetAvatar: "opponent", avatarData: alliedAvatar, directDamage },
+      data: {
+        targetAvatar: "opponent",
+        avatarData: alliedAvatar,
+        directDamage,
+      },
     };
 
     // Envia a mensagem ao jogador atual
@@ -1682,12 +1637,14 @@ function handleSpecialBuffRequest(cardInstanceId, condition) {
       //console.log(`Nova carta: Ataque = ${newAttack}, Vida = ${newHealth}`);
 
       break;
-    
+
     case "cards-destroyed-by-effects":
-      const buff = cardsDestroyed.destructionEffects.byPlayer1 + cardsDestroyed.destructionEffects.byPlayer2;
+      const buff =
+        cardsDestroyed.destructionEffects.byPlayer1 +
+        cardsDestroyed.destructionEffects.byPlayer2;
       newAttack = carta.currentAttack + buff;
       newHealth = carta.currentHealth + buff;
-      carta.updateStats(newAttack, newHealth)
+      carta.updateStats(newAttack, newHealth);
       break;
 
     default:
@@ -1707,7 +1664,28 @@ function handleSpecialBuffRequest(cardInstanceId, condition) {
     );
     p.ws.send(JSON.stringify(message));
   });
+}
 
+function removeCardFromTheGame(instanceId) {
+  console.log("removeCardFromTheGame triggered.");
+  const carta = cartasMap.get(Number(instanceId));
+  if (carta && carta instanceof Carta) {
+    const message = {
+      type: "removeCardFromTheField",
+      data: carta,
+    };
+    console.log(
+      "Enviando mensagem para que os jogadores atualizem seus DOMs de forma a refletir a carta agora deletada do jogo."
+    );
+    players.forEach((p) => {
+      p.ws.send(JSON.stringify(message));
+    });
+    cartasMap.delete(instanceId);
+  } else {
+    console.error(
+      `Carta não encontrada no mapa para a instanceId: ${instanceId} ou não é uma instância válida da classe Carta.`
+    );
+  }
 }
 
 function gameOver(winner) {

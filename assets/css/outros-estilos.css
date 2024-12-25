@@ -271,15 +271,31 @@ button:disabled {
 
 .card-attack,
 .card-health,
-.card-cost-display,
 .card-speed-display {
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  background-color: black;
   border: 1px solid white;
   aspect-ratio: 1 / 1;
+}
+
+.card-attack, .card-health, .card-speed-display {
+  background-color: black;
+}
+
+.card-cost-display {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+}
+
+.card-cost-text {
+  border-radius: 50%;
+  width: 75%;
+  height: 75%;
+  position: absolute;
 }
 
 .card-attack,
@@ -307,8 +323,8 @@ button:disabled {
   width: 80%;
   background: none;
   bottom: 0;
-  justify-content: space-around;
-  gap: 7px;
+  justify-content: space-between;
+  gap: 2px;
   z-index: 2;
 }
 
@@ -425,6 +441,14 @@ button:disabled {
 .highlight {
   border: 2px solid green;
   filter: drop-shadow(7px 10px 20px rgb(31, 196, 9));
+}
+
+.red-highlight {
+  filter: drop-shadow(7px 10px 20px rgb(196, 31, 9));
+}
+
+.blue-highlight {
+  filter: drop-shadow(7px 10px 20px rgb(31, 9, 196));
 }
 
 /*------------------------------------------------------------------------------- */
